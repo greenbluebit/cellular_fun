@@ -14,10 +14,22 @@ struct CellType {
     Color color;
     char *name;
     struct TargetCellRelationship *targetCellRelationship[MAX_RELATIONSHIPS];
-};
+} T_CellType;
 
+// relationshipType
+// equal
+// notequal
+// less
+// lessequal
+// more
+// moreequal
+// self
 struct TargetCellRelationship {
-    struct CellType *targetCellType;
+    //struct CellType *targetCellType;
+    int targetCellTypeIndex;
+    char *relationshipType;
     int amount;
-    struct CellType *resultCellType;
-};
+    int index;
+    int resultCellTypeIndex;
+    //struct CellType *resultCellType;
+} T_TargetCellRelationship;
