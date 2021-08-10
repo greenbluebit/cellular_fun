@@ -12,6 +12,8 @@
 		"easings.h": "c",
 		"windows.h": "c",
 		"raylib.h": "c",
-		"stdio.h": "c"
+		"stdio.h": "c",
+		"raygui.h": "c",
+		"gui_file_dialog.h": "c"
 	}
 }

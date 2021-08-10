@@ -1,7 +1,18 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "raylib.h"
+#include "utils.h"
+
+#define RAYGUI_IMPLEMENTATION
+#define RAYGUI_SUPPORT_ICONS
+#include "raygui/src/raygui.h"
+
+#undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
+
+#define GUI_FILE_DIALOG_IMPLEMENTATION
+#include "gui_file_dialog.h"
 
 #define MAX_RELATIONSHIPS       10
 
