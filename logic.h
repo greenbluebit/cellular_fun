@@ -58,7 +58,7 @@ void Loop() {
     //DisableCursor();
     while(WindowShouldClose() == false) {
         float deltaTime = GetFrameTime();
-        generationFramesCounter++;
+        generationFramesCounter+= generationSpeedMultiplier;
 
         if(IsKeyPressed(KEY_LEFT_SHIFT)) {
             isMovingFast = true;
@@ -87,18 +87,35 @@ void Loop() {
         if(selectedCellType > -1 && isShowingUI == false && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
             int mouseX = (mouseToWorldPosition.x) / (CELL_SIZE + CELL_SEPARATION) + 1;
             int mouseY = (mouseToWorldPosition.y) / (CELL_SIZE + CELL_SEPARATION) + 1;
+
             if(mouseX >= 0 && mouseX < MAX_CELLS_X) {
                 if(mouseY >= 0 && mouseY < MAX_CELLS_Y) {
                     cells[mouseX][mouseY] = selectedCellType;
                     finalCells[mouseX][mouseY] = cells[mouseX][mouseY];
+
+                    for(int neighbourX = mouseX - brushSize; neighbourX <= mouseX + brushSize; neighbourX++) {
+                        for(int neighbourY = mouseY - brushSize; neighbourY <= mouseY + brushSize; neighbourY++) {
+                            if(neighbourX >= 0 && neighbourX < MAX_CELLS_X && neighbourY >= 0 && neighbourY < MAX_CELLS_Y) {
+                                if((neighbourX != mouseX || neighbourY != mouseY)) {
+                                    cells[neighbourX][neighbourY] = selectedCellType;
+                                    finalCells[neighbourX][neighbourY] = cells[neighbourX][neighbourY];
+                                }
+                            }
+                        }
+                    }
                 }
             }
+            
+            
+
+            
         }
 
         
-
+        SetWindowTitle(TextFormat("%i", generationFramesCounter));
         //if((generationFramesCounter / (TARGET_FPS * generationPerSeconds) % generationPerSeconds) == 1) {
-        if(generationFramesCounter - (TARGET_FPS * generationPerSeconds) == 0) {
+        if(generationFramesCounter >= TARGET_FPS) {
+        //(generationFramesCounter - (TARGET_FPS * (generationPerSeconds + generationSpeedMultiplier)) == 0) {
             generationFramesCounter = 0;
             if(isShowingUI == false) {
                 LoopCells();
