@@ -15,6 +15,7 @@
 #include "gui_file_dialog.h"
 
 #define MAX_RELATIONSHIPS       10
+#define MAX_NAME_LENGTH         15
 
 struct CellType;
 struct TargetCellRelationship;
@@ -23,7 +24,7 @@ struct CellType {
     int index;
     int neighbourType;
     Color color;
-    char *name;
+    char name[MAX_NAME_LENGTH + 1];
     struct TargetCellRelationship *targetCellRelationship[MAX_RELATIONSHIPS];
 } T_CellType;
 
@@ -38,7 +39,7 @@ struct CellType {
 struct TargetCellRelationship {
     //struct CellType *targetCellType;
     int targetCellTypeIndex;
-    char *relationshipType;
+    int relationshipType;
     int amount;
     int index;
     int resultCellTypeIndex;

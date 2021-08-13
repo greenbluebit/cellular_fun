@@ -1,23 +1,28 @@
 #include "classes.h"
 #include <string.h>
 
-#define MAX_CELLS_X         500
-#define MAX_CELLS_Y         500
-#define MAX_CELLTYPES       10
+#define MAX_CELLS_X             500
+#define MAX_CELLS_Y             500
+#define MAX_CELLTYPES           10
+#define MAX_RELATIONSHIP_TYPES  7
 
 
 struct CellType cellTypes[MAX_CELLTYPES];
+const char *relationshipTypes[MAX_RELATIONSHIP_TYPES] =
+{"equal", "notequal", "less", "lessequal", "more", "moreequal", "self"};
 
 int cells[MAX_CELLS_X] [MAX_CELLS_Y] = { 0 };
 int finalCells [MAX_CELLS_X] [MAX_CELLS_Y] = { 0 };
 
 void SetupCells() {
     for(int i = 0; i < MAX_CELLTYPES; i++) {
-        cellTypes[i].index = -1;           
+        cellTypes[i].index = -1;
+        strcpy(cellTypes[i].name, "Unset");
     }
 
     cellTypes[0].color = WHITE;
     cellTypes[0].index = 0;
+    strcpy(cellTypes[0].name, "Default");
 }
 
 void LoopCells() {
@@ -25,66 +30,59 @@ void LoopCells() {
         for(int y = 0; y < MAX_CELLS_Y; y++) {
             for(int i = 0; i < MAX_RELATIONSHIPS; i++) {
                 int cellIndex = cells[x][y];
-                if(cellTypes[cellIndex].targetCellRelationship[i] != 0) {
+                if(cellTypes[cellIndex].targetCellRelationship[i] != 0 && cellTypes[cellIndex].targetCellRelationship[i]->index > -1) {
                     int neighbours = getGridNeighbours(x, y, finalCells, cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex);
                     bool relationshipFullfilled = false; 
-                    if(cellTypes[cellIndex].targetCellRelationship[i]->relationshipType != 0) {
-                        if( strcmp(cellTypes[cellIndex].targetCellRelationship[i]->relationshipType, "equal") == 0)
+                    if( strcmp(relationshipTypes[cellTypes[cellIndex].targetCellRelationship[i]->relationshipType], "equal") == 0)
+                    {
+                        if(neighbours == cellTypes[cellIndex].targetCellRelationship[i]->amount)
                         {
-                            // if(neighbours == cellTypes[cellIndex].targetCellRelationship[i]->amount && cellTypes[cellIndex].targetCellRelationship[i]->resultCellType != 0)
-                            // {
-                            //     cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
-                            // }
-                            if(neighbours == cellTypes[cellIndex].targetCellRelationship[i]->amount)
-                            {
-                                cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
-                                relationshipFullfilled = true;
-                            }
-                        } else if(strcmp(cellTypes[cellIndex].targetCellRelationship[i]->relationshipType, "notequal") == 0)
-                        {
-                            if(neighbours != cellTypes[cellIndex].targetCellRelationship[i]->amount)
-                            {
-                                cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
-                                relationshipFullfilled = true;
-                            }
-                        }else if(strcmp(cellTypes[cellIndex].targetCellRelationship[i]->relationshipType, "less") == 0)
-                        {
-                            if(neighbours < cellTypes[cellIndex].targetCellRelationship[i]->amount)
-                            {
-                                cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
-                                relationshipFullfilled = true;
-                            }
-                        }else if(strcmp(cellTypes[cellIndex].targetCellRelationship[i]->relationshipType, "lessequal") == 0)
-                        {
-                            if(neighbours <= cellTypes[cellIndex].targetCellRelationship[i]->amount)
-                            {
-                                cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
-                                relationshipFullfilled = true;
-                            }
-                        }else if(strcmp(cellTypes[cellIndex].targetCellRelationship[i]->relationshipType, "more") == 0)
-                        {
-                            if(neighbours > cellTypes[cellIndex].targetCellRelationship[i]->amount)
-                            {
-                                cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
-                                relationshipFullfilled = true;
-                            }
-                        }else if(strcmp(cellTypes[cellIndex].targetCellRelationship[i]->relationshipType, "moreequal") == 0)
-                        {
-                            if(neighbours >= cellTypes[cellIndex].targetCellRelationship[i]->amount)
-                            {
-                                cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
-                                relationshipFullfilled = true;
-                            }
-                        } else if(strcmp(cellTypes[cellIndex].targetCellRelationship[i]->relationshipType, "self") == 0) {
                             cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
                             relationshipFullfilled = true;
                         }
-
-                        if(relationshipFullfilled == true) {
-                            break;
+                    } else if(strcmp(relationshipTypes[cellTypes[cellIndex].targetCellRelationship[i]->relationshipType], "notequal") == 0)
+                    {
+                        if(neighbours != cellTypes[cellIndex].targetCellRelationship[i]->amount)
+                        {
+                            cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
+                            relationshipFullfilled = true;
                         }
+                    }else if(strcmp(relationshipTypes[cellTypes[cellIndex].targetCellRelationship[i]->relationshipType], "less") == 0)
+                    {
+                        if(neighbours < cellTypes[cellIndex].targetCellRelationship[i]->amount)
+                        {
+                            cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
+                            relationshipFullfilled = true;
+                        }
+                    }else if(strcmp(relationshipTypes[cellTypes[cellIndex].targetCellRelationship[i]->relationshipType], "lessequal") == 0)
+                    {
+                        if(neighbours <= cellTypes[cellIndex].targetCellRelationship[i]->amount)
+                        {
+                            cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
+                            relationshipFullfilled = true;
+                        }
+                    }else if(strcmp(relationshipTypes[cellTypes[cellIndex].targetCellRelationship[i]->relationshipType], "more") == 0)
+                    {
+                        if(neighbours > cellTypes[cellIndex].targetCellRelationship[i]->amount)
+                        {
+                            cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
+                            relationshipFullfilled = true;
+                        }
+                    }else if(strcmp(relationshipTypes[cellTypes[cellIndex].targetCellRelationship[i]->relationshipType], "moreequal") == 0)
+                    {
+                        if(neighbours >= cellTypes[cellIndex].targetCellRelationship[i]->amount)
+                        {
+                            cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
+                            relationshipFullfilled = true;
+                        }
+                    } else if(strcmp(relationshipTypes[cellTypes[cellIndex].targetCellRelationship[i]->relationshipType], "self") == 0) {
+                        cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
+                        relationshipFullfilled = true;
                     }
-                    
+
+                    if(relationshipFullfilled == true) {
+                        break;
+                    }                    
                 }
             }
         }

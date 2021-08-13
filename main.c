@@ -1,4 +1,4 @@
-#include "game.h"
+#include "logic.h"
 #include <stdio.h>
 
 int main(void) {
