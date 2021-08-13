@@ -19,6 +19,7 @@
 int framesCounter = 0;
 Rectangle leftUIBackground = {- (0.2 * SCREEN_WIDTH), 0, 0.2 * SCREEN_WIDTH, SCREEN_HEIGHT, LIGHTGRAY};
 Vector2 mousePosition;
+bool isMouseOverUI = false;
 bool isShowingUI = false;
 bool isUIAnimationFinished = false;
 bool isShowingCreateCellTypeDialog = false;
@@ -48,6 +49,14 @@ Rectangle panelContentRec = {0, 0, (DIALOG_CONTENT_PERC * SCREEN_WIDTH), (0.65 *
 Vector2 panelScroll = { 99, 0 };
 Rectangle panelView;
 
+Rectangle sidePanel = {SCREEN_WIDTH * 0.94, 0, SCREEN_WIDTH * 0.06, SCREEN_HEIGHT};
+// TEDO Not used
+Rectangle editCellPanelHolder = {(0.5 * SCREEN_WIDTH - (DIALOG_VIEW_PERCENT * SCREEN_WIDTH) / 2) - 40 / 2,
+(0.6 * SCREEN_HEIGHT - (DIALOG_VIEW_PERCENT * SCREEN_HEIGHT) / 2) - ((DIALOG_VIEW_PERCENT + 0.30f) * SCREEN_HEIGHT) * 0.45f,
+(DIALOG_VIEW_PERCENT * SCREEN_WIDTH) + 40,
+((DIALOG_VIEW_PERCENT + 0.30f) * SCREEN_HEIGHT)
+};
+
 char cellName[MAX_NAME_LENGTH + 1] = "\0";
 int letterCount = 0;
 bool textBoxSelected = false;
@@ -65,7 +74,13 @@ void HandleEditCellUI();
 void HandleRunningMenuUI();
 
 void HandleRunningMenuUI() {
-    DrawRectangle(SCREEN_WIDTH * 0.94, 0, SCREEN_WIDTH * 0.06, SCREEN_HEIGHT, Fade(LIGHTGRAY, uiTransparency));
+    DrawRectangleRec(sidePanel, Fade(LIGHTGRAY, uiTransparency));
+
+    if(CheckCollisionPointRec(GetMousePosition(), sidePanel)) {
+        isMouseOverUI = true;
+    } else {
+        isMouseOverUI = false;
+    }
 
     // Cells Menu
     for(int i = 0; i < MAX_CELLTYPES; i++) {
@@ -315,6 +330,7 @@ void HandleEditCellUI() {
             relationshipCounter++;
         }
     }
+    panelContentRec.height = 30 + 45 * relationshipCounter;
         
     EndScissorMode();
 

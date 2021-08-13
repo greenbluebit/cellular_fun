@@ -54,10 +54,9 @@ void Setup() {
 
 void Loop() {
 
-    SetExitKey(0); // This was I set the exit key. Atm, on Escape, it exits
+    SetExitKey(0); // This way I set the exit key. Atm, on Escape, it exits
     //DisableCursor();
     while(WindowShouldClose() == false) {
-        float deltaTime = GetFrameTime();
         generationFramesCounter+= generationSpeedMultiplier;
 
         if(IsKeyPressed(KEY_LEFT_SHIFT)) {
@@ -84,7 +83,7 @@ void Loop() {
         // Handle Cell Interaction
         Vector2 mouseToWorldPosition = GetScreenToWorld2D(GetMousePosition(), camera);
         
-        if(selectedCellType > -1 && isShowingUI == false && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+        if(selectedCellType > -1 && isShowingUI == false && isMouseOverUI == false && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
             int mouseX = (mouseToWorldPosition.x) / (CELL_SIZE + CELL_SEPARATION) + 1;
             int mouseY = (mouseToWorldPosition.y) / (CELL_SIZE + CELL_SEPARATION) + 1;
 
@@ -105,17 +104,9 @@ void Loop() {
                     }
                 }
             }
-            
-            
-
-            
         }
 
-        
-        SetWindowTitle(TextFormat("%i", generationFramesCounter));
-        //if((generationFramesCounter / (TARGET_FPS * generationPerSeconds) % generationPerSeconds) == 1) {
         if(generationFramesCounter >= TARGET_FPS) {
-        //(generationFramesCounter - (TARGET_FPS * (generationPerSeconds + generationSpeedMultiplier)) == 0) {
             generationFramesCounter = 0;
             if(isShowingUI == false) {
                 LoopCells();
@@ -139,12 +130,8 @@ void Loop() {
         
 
         BeginMode2D(camera);
-
-        
-
         DrawRectangle(-20,-20, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) + 40, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) + 40, BLACK);
         
-
         for(int x = 0; x < MAX_CELLS_X; x++) {
             for(int y = 0; y < MAX_CELLS_Y; y++) {
                 DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
@@ -152,9 +139,6 @@ void Loop() {
             }
         }
 
-        
-        
-        
         if(isShowingUI == false) {
             mouseToWorldPosition = GetScreenToWorld2D(GetMousePosition(), camera);
             DrawRectangle(mouseToWorldPosition.x, mouseToWorldPosition.y, 5, 5, BLACK);
