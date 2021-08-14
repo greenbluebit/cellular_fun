@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ui.h"
+#include "cJSON/cJSON.h"
 
 
 #define MOVE_SPEED          10
@@ -31,10 +32,102 @@ int testSize = 0;
 void UpdateMyCamera();
 void HandleUI();
 
-void Setup() {
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Cellular Fun - by Ted");
+char *PrintJson(void) {
+    // TEDO I can reuse variables in next version
+    char *string = NULL;
+    cJSON *jsonCellTypes = NULL;
+    cJSON *jsonCellType = NULL;
+    cJSON *jsonIndex = NULL;
+    cJSON *jsonNeighbourType = NULL;
+    cJSON *jsonColor = NULL;
+    cJSON *jsonR = NULL;
+    cJSON *jsonG = NULL;
+    cJSON *jsonB = NULL;
+    cJSON *jsonA = NULL;
+    cJSON *jsonName = NULL;
+    cJSON *jsonTargetRelationships = NULL;
+    cJSON *jsonTargetIndex = NULL;
+    cJSON *jsonRelationshipType = NULL;
+    cJSON *jsonAmount = NULL;
+    cJSON *jsonRelationshipIndex = NULL;
+    cJSON *jsonResultIndex = NULL;
+    cJSON *jsonCells = NULL;
+    cJSON *jsonCellIndex = NULL;
 
-    fileDialogState = InitGuiFileDialog(420, 310, GetWorkingDirectory(), false);
+    cJSON *parent = cJSON_CreateObject();
+    if(parent == NULL) {
+        goto end;
+    }
+
+    jsonCellTypes = cJSON_CreateArray();
+    cJSON_AddItemToObject(parent, "celltypes", jsonCellTypes);
+
+    for(int i = 0; i < MAX_CELLTYPES; i++) {
+        jsonCellType = cJSON_CreateObject();
+        if(jsonCellType == NULL) { // TEDO I Need to do this check at the rest of the json initializers
+            goto end;
+        }
+        cJSON_AddItemToArray(jsonCellTypes, jsonCellType);
+
+        jsonIndex = cJSON_CreateNumber(cellTypes[i].index);
+        cJSON_AddItemToObject(jsonCellType, "index", jsonIndex);
+
+        jsonNeighbourType = cJSON_CreateNumber(cellTypes[i].neighbourType);
+        cJSON_AddItemToObject(jsonCellType, "neighbourtype", jsonNeighbourType);
+
+        jsonColor = cJSON_CreateObject();
+        cJSON_AddItemToObject(jsonCellType, "color", jsonColor);
+
+        jsonR = cJSON_CreateNumber(cellTypes[i].color.r);
+        cJSON_AddItemToObject(jsonColor, "r", jsonR);
+
+        jsonG = cJSON_CreateNumber(cellTypes[i].color.g);
+        cJSON_AddItemToObject(jsonColor, "g", jsonG);
+
+        jsonB = cJSON_CreateNumber(cellTypes[i].color.b);
+        cJSON_AddItemToObject(jsonColor, "b", jsonB);
+
+        jsonName = cJSON_CreateString(cellTypes[i].name);
+        cJSON_AddItemToObject(jsonCellType, "name", jsonName);
+
+        jsonTargetRelationships = cJSON_CreateArray();
+        cJSON_AddItemToObject(jsonCellType, "targetcellrelationship", jsonTargetRelationships);
+
+        for(int x = 0; x < MAX_RELATIONSHIPS; x++) {
+            cJSON *jsonTargetRelationship = cJSON_CreateObject();
+            cJSON_AddItemToArray(jsonTargetRelationships, jsonTargetRelationship);
+
+            jsonTargetIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->targetCellTypeIndex);
+            cJSON_AddItemToObject(jsonTargetRelationship, "targetindex", jsonTargetIndex);
+
+            jsonRelationshipType = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->relationshipType);
+            cJSON_AddItemToObject(jsonTargetRelationship, "relationshiptype", jsonRelationshipType);
+
+            jsonAmount = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->amount);
+            cJSON_AddItemToObject(jsonTargetRelationship, "amount", jsonAmount);
+
+            jsonRelationshipIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->index);
+            cJSON_AddItemToObject(jsonTargetRelationship, "index", jsonRelationshipIndex);
+
+            jsonResultIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->resultCellTypeIndex);
+            cJSON_AddItemToObject(jsonResultIndex, "resultindex", jsonResultIndex);
+        }
+    }
+
+    string = cJSON_Print(parent);
+    if(string == NULL) {
+        fprintf(stderr, "Failed to print. \n");
+    }
+
+    end:
+        cJSON_Delete(parent);
+        return string;
+}
+
+void Setup() {
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Cellular Fun");
+
+    fileDialogState = InitGuiFileDialog(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, GetWorkingDirectory(), false);
     char fileNameToLoad[512] = { 0 };
     
     font = LoadFont("resources/fonts/setback.png");
@@ -65,7 +158,7 @@ void Loop() {
         if(IsKeyReleased(KEY_LEFT_SHIFT)) {
             isMovingFast = false;
         }
-        if(IsKeyPressed(KEY_P)) {
+        if(IsKeyPressed(KEY_ESCAPE)) {
             isShowingUI = !isShowingUI;
             // Hiding other UI elements
             if(isShowingUI == false) {
@@ -76,7 +169,7 @@ void Loop() {
         if(fileDialogState.SelectFilePressed) {
             if(IsFileExtension(fileDialogState.fileNameText, ".json")) {
                 strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
-
+                PrintJson();
             }
         }
 
@@ -147,6 +240,12 @@ void Loop() {
         EndMode2D();
 
         HandleUI();
+
+        if (fileDialogState.fileDialogActive) GuiLock();
+        GuiUnlock();
+
+        GuiFileDialog(&fileDialogState);
+
         EndDrawing();
     }
 
@@ -212,8 +311,22 @@ void HandleUI() {
         } else {
             int backgroundPositionX = leftUIBackground.width / 2;
             int contentPositionX = backgroundPositionX - 55;
-            DrawRectanglePro(leftUIBackground, (Vector2) {backgroundPositionX, 0}, 0, Fade(LIGHTGRAY, uiTransparency));            
-            if(GuiButton((Rectangle) {contentPositionX, 0.52 * SCREEN_HEIGHT, 100, 20}, "Add Cell Type")) {
+            
+            DrawRectanglePro(leftUIBackground, (Vector2) {backgroundPositionX, 0}, 0, Fade(LIGHTGRAY, uiTransparency));
+            DrawRectangle(contentPositionX - 15, 20, 125, 125, WHITE);
+            DrawRectangleLines(contentPositionX - 15, 20, 125, 125, BLACK);
+            
+            DrawRectangle(contentPositionX - 7, 150, 110, 25, WHITE);
+            DrawRectangleLines(contentPositionX - 7, 150, 110, 25, BLACK);
+            
+            DrawText("Cellular Fun", contentPositionX + 11, 156, 12, BLACK);
+
+            DrawRectangle(contentPositionX + 10, 180, 70, 25, WHITE);
+            DrawRectangleLines(contentPositionX + 10, 180, 70, 25, BLACK);
+            
+            DrawText("by Ted", contentPositionX + 26, 186, 12, BLACK);
+            if(GuiButton((Rectangle) {contentPositionX, 0.62 * SCREEN_HEIGHT, 100, 20}, "Add Cell Type")) {
+                textBoxSelected = false;
                 isShowingCreateCellTypeDialog = true;
                 if(selectedIndex == -1) { // TEDO remove this if
                     for(int i = 0; i < MAX_CELLTYPES; i++) {
@@ -237,6 +350,15 @@ void HandleUI() {
                     newTargetRelationShips[i].resultCellTypeIndex = 0;
                     newTargetRelationShips[i].targetCellTypeIndex = 0;
                 }
+            }
+            if(GuiButton((Rectangle) {contentPositionX, 0.66 * SCREEN_HEIGHT, 100, 20}, "Save File")) {
+                exit(0);
+            }
+            if(GuiButton((Rectangle) {contentPositionX, 0.70 * SCREEN_HEIGHT, 100, 20}, "Load File")) {
+                fileDialogState.fileDialogActive = true;
+            }
+            if(GuiButton((Rectangle) {contentPositionX, 0.74 * SCREEN_HEIGHT, 100, 20}, "Exit Application")) {
+                exit(0);
             }
         }
         

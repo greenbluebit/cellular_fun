@@ -34,7 +34,6 @@ Color selectedColor = BLACK;
 char newCellName[MAX_NAME_LENGTH];
 int cellNameCount = 0;
 bool mouseOnText = false;
-bool selectedCellNameText = false;
 int selectedIndex = -1;
 Rectangle cellNameTextBox = {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 100, 50};
 struct TargetCellRelationship newTargetRelationShips[MAX_RELATIONSHIPS];
@@ -97,6 +96,7 @@ void HandleRunningMenuUI() {
             }
             
             if(GuiButton((Rectangle) {cellPositionX - (cellWidth * 1.25), cellPositionY, cellWidth, cellHeight}, "...")) {
+                textBoxSelected = false;
                 selectedIndex = i;
                 selectedColor = cellTypes[selectedIndex].color;
                 selectedNeighbourType = cellTypes[selectedIndex].neighbourType;
@@ -149,7 +149,7 @@ void HandleRunningMenuUI() {
     }
     DrawText("Cells", 0.97 * SCREEN_WIDTH, 0.1 * SCREEN_HEIGHT, 10, BLACK);
 
-    if(GuiButton((Rectangle) {0.95 * SCREEN_WIDTH, 0.88 * SCREEN_HEIGHT, 60, 20}, brushSizeNames[brushSize])) {
+    if(GuiButton((Rectangle) {0.95 * SCREEN_WIDTH, 0.84 * SCREEN_HEIGHT, 60, 20}, brushSizeNames[brushSize])) {
         if(brushSize >= MAX_BRUSH_SIZE) {
             brushSize = MIN_BRUSH_SIZE;
         } else {
@@ -157,7 +157,7 @@ void HandleRunningMenuUI() {
         }
     }
 
-    if(GuiButton((Rectangle) {0.95 * SCREEN_WIDTH, 0.92 * SCREEN_HEIGHT, 60, 20}, generationSpeedMultiplierNames[generationSpeedMultiplier - 1])) {
+    if(GuiButton((Rectangle) {0.95 * SCREEN_WIDTH, 0.88 * SCREEN_HEIGHT, 60, 20}, generationSpeedMultiplierNames[generationSpeedMultiplier - 1])) {
         if(generationSpeedMultiplier >= MAX_GENERATION_SPEED_MULTIPLIER) {
             generationSpeedMultiplier = MIN_GENERATION_SPEED_MULTIPLIER;
         } else {
@@ -165,13 +165,17 @@ void HandleRunningMenuUI() {
         }
     }
 
-    if(GuiButton((Rectangle) {0.95 * SCREEN_WIDTH, 0.96 * SCREEN_HEIGHT, 60, 20}, "Clear")) {
+    if(GuiButton((Rectangle) {0.95 * SCREEN_WIDTH, 0.92 * SCREEN_HEIGHT, 60, 20}, "Clear")) {
         for(int x = 0; x < MAX_CELLS_X; x++) {
             for(int y = 0; y < MAX_CELLS_Y; y++) {
                 finalCells[x][y] = defaultCell;
                 cells[x][y] = defaultCell;
             }
         }
+    }
+
+    if(GuiButton((Rectangle) {0.95 * SCREEN_WIDTH, 0.96 * SCREEN_HEIGHT, 60, 20}, isShowingUI == false ? "Pause" : "Resume")) {
+        isShowingUI = !isShowingUI;
     }
 }
 
@@ -257,7 +261,10 @@ void HandleEditCellUI() {
 
     int cellColorPickerSize = 100;
         
-    DrawText("Color:", dialogHolderPosX + 260, dialogHolderPosY + 30, 8, BLACK);
+    DrawText("Color:", dialogHolderPosX + 220, dialogHolderPosY + 30, 8, BLACK);
+
+    DrawRectangle(dialogHolderPosX + 220, dialogHolderPosY + 45, 30, 30, selectedColor);
+
     selectedColor = GuiColorPicker((Rectangle) {dialogHolderPosX + 260, dialogHolderPosY + 45, cellColorPickerSize, cellColorPickerSize}, selectedColor);
     
     DrawText("Relationships:", dialogHolderPosX + 20, dialogHolderPosY + 165, 8, BLACK);

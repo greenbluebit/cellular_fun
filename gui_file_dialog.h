@@ -257,7 +257,7 @@ void GuiFileDialog(GuiFileDialogState *state)
         //------------------------------------------------------------------------------------
 
         DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), 0.85f));
-        state->fileDialogActive = !GuiWindowBox((Rectangle){ state->position.x + 0, state->position.y + 0, winWidth, winHeight }, "#198#LuaJIT | Select File Dialog");
+        state->fileDialogActive = !GuiWindowBox((Rectangle){ state->position.x + 0, state->position.y + 0, winWidth, winHeight }, "#198#File Dialog");
 
         if (GuiButton((Rectangle){ state->position.x + winWidth - 50, state->position.y + 35, 40, 25 }, "< ..")) // || IsKeyReleased(KEY_DPAD_Y))
         {
@@ -352,7 +352,7 @@ void GuiFileDialog(GuiFileDialogState *state)
                 }
                 else
                 {
-                    strcpy(state->fileNameText, state->fileNameTextCopy);
+                    //strcpy(state->fileNameText, state->fileNameTextCopy);
                 }
             }
 
@@ -368,7 +368,7 @@ void GuiFileDialog(GuiFileDialogState *state)
 #else
             25 + 30
 #endif
-        }, "Select");// || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_DPAD_A);
+        }, "Ok");// || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_DPAD_A);
 
         if (state->SelectFilePressed) state->fileDialogActive = false;
 
