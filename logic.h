@@ -2,6 +2,7 @@
 
 #include "ui.h"
 #include "cJSON/cJSON.h"
+#include "cJSON/cJSON.c"
 
 
 #define MOVE_SPEED          10
@@ -17,12 +18,12 @@
 
 GuiFileDialogState fileDialogState;
 char fileNameToLoad[512] = { 0 };
+FILE *fp;
+bool isSavingFile = false;
 
 bool isMovingFast = false;
 
 Camera2D camera = { 0 };
-int generationFramesCounter = 0;
-int generationPerSeconds = 1;
 
 Font font;
 
@@ -32,9 +33,134 @@ int testSize = 0;
 void UpdateMyCamera();
 void HandleUI();
 
-char *PrintJson(void) {
+int ParseJson(char *string) {
+    int status = 0;
+    cJSON *parent = cJSON_Parse(string);
+    cJSON *jsonDefaultCell = NULL;
+    cJSON *jsonCellTypes = NULL;
+    cJSON *jsonCellType = NULL;
+    cJSON *jsonIndex = NULL;
+    cJSON *jsonNeighbourType = NULL;
+    cJSON *jsonColor = NULL;
+    cJSON *jsonR = NULL;
+    cJSON *jsonG = NULL;
+    cJSON *jsonB = NULL;
+    cJSON *jsonA = NULL;
+    cJSON *jsonName = NULL;
+    cJSON *jsonTargetRelationships = NULL;
+    cJSON *jsonTargetRelationship = NULL;
+    cJSON *jsonTargetIndex = NULL;
+    cJSON *jsonRelationshipType = NULL;
+    cJSON *jsonAmount = NULL;
+    cJSON *jsonToAmount = NULL;
+    cJSON *jsonRelationshipIndex = NULL;
+    cJSON *jsonResultIndex = NULL;
+
+    if(parent == NULL) {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL)
+        {
+            fprintf(stderr, "Error before: %s\n", error_ptr);
+        }
+        status = 1;
+        goto end;
+    }
+
+    
+    jsonDefaultCell = cJSON_GetObjectItemCaseSensitive(parent, "defaultcell");
+    if(jsonDefaultCell != NULL) {
+        defaultCell = jsonDefaultCell->valueint;
+        selectedCellType = defaultCell;
+        for(int x = 0; x < MAX_CELLS_X; x++) {
+            for(int y = 0; y < MAX_CELLS_Y; y++) {
+                finalCells[x][y] = defaultCell;
+                cells[x][y] = defaultCell;
+            }
+        }
+    }
+    
+
+    for(int i = 0; i < MAX_CELLTYPES; i++) {
+        cellTypes[i].index = -1;
+        for(int x = 0; x < MAX_RELATIONSHIPS; x++) {
+            cellTypes[i].targetCellRelationship[x] = NULL;
+        }
+    }
+
+    jsonCellTypes = cJSON_GetObjectItemCaseSensitive(parent, "celltypes");
+    // MAYBE
+    // TEDO I need to change it so that instead of having relationship array or cellType array uninitiated, to have them all with no indexes
+    //int cellTypeIndex = 0;
+    cJSON_ArrayForEach(jsonCellType, jsonCellTypes) {
+        jsonIndex = cJSON_GetObjectItemCaseSensitive(jsonCellType, "index");
+        jsonNeighbourType = cJSON_GetObjectItemCaseSensitive(jsonCellType, "neighbourtype");
+        jsonColor = cJSON_GetObjectItemCaseSensitive(jsonCellType, "color");
+
+        if(jsonColor == NULL) {
+            const char *error_ptr = cJSON_GetErrorPtr();
+            if (error_ptr != NULL)
+            {
+                fprintf(stderr, "Error before: %s\n", error_ptr);
+            }
+            status = 2;
+            goto end;
+        }
+
+        jsonR = cJSON_GetObjectItemCaseSensitive(jsonColor, "r");
+        jsonG = cJSON_GetObjectItemCaseSensitive(jsonColor, "g");
+        jsonB = cJSON_GetObjectItemCaseSensitive(jsonColor, "b");
+        jsonA = cJSON_GetObjectItemCaseSensitive(jsonColor, "a");
+
+        jsonName = cJSON_GetObjectItemCaseSensitive(jsonCellType, "name");
+
+        cellTypes[jsonIndex->valueint].index = jsonIndex->valueint;
+        cellTypes[jsonIndex->valueint].color = CLITERAL(Color){ jsonR->valueint, jsonG->valueint, jsonB->valueint, jsonA->valueint };
+        
+        strcpy(cellTypes[jsonIndex->valueint].name, jsonName->valuestring);
+
+
+
+        jsonTargetRelationships = cJSON_GetObjectItemCaseSensitive(jsonCellType, "targetcellrelationships");
+
+        cJSON_ArrayForEach(jsonTargetRelationship, jsonTargetRelationships) {
+            jsonTargetIndex = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "targetindex");
+            jsonRelationshipType = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "relationshiptype");
+            jsonAmount = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "amount");
+            jsonToAmount = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "toamount");
+            jsonRelationshipIndex = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "index");
+            jsonResultIndex = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "resultindex");
+
+            if(jsonRelationshipIndex->valueint > -1) {
+                if(cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint] == 0) {
+                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint] = malloc(sizeof(T_TargetCellRelationship));
+                }
+                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->amount = jsonAmount->valueint;
+                if(jsonToAmount != NULL) {
+                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->toAmount = jsonToAmount->valueint;
+                } else {
+                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->toAmount = 0;
+                }
+                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->index = jsonIndex->valueint;
+                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->relationshipType = jsonRelationshipType->valueint;
+                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->resultCellTypeIndex = jsonResultIndex->valueint;
+                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->targetCellTypeIndex = jsonTargetIndex->valueint;
+            }
+            
+        }
+
+
+        //cellTypeIndex++;
+    }
+
+    end:
+        cJSON_Delete(parent);
+        return status;
+}
+
+char *PrintJson() {
     // TEDO I can reuse variables in next version
     char *string = NULL;
+    cJSON *jsonDefaultCell = NULL;
     cJSON *jsonCellTypes = NULL;
     cJSON *jsonCellType = NULL;
     cJSON *jsonIndex = NULL;
@@ -49,15 +175,21 @@ char *PrintJson(void) {
     cJSON *jsonTargetIndex = NULL;
     cJSON *jsonRelationshipType = NULL;
     cJSON *jsonAmount = NULL;
+    cJSON *jsonToAmount = NULL;
     cJSON *jsonRelationshipIndex = NULL;
     cJSON *jsonResultIndex = NULL;
     cJSON *jsonCells = NULL;
-    cJSON *jsonCellIndex = NULL;
+    // cJSON *jsonCell = NULL;
+    // cJSON *jsonCellIndex = NULL;
+    // cJSON *jsonCellTypeIndex = NULL;
 
     cJSON *parent = cJSON_CreateObject();
     if(parent == NULL) {
         goto end;
     }
+
+    jsonDefaultCell = cJSON_CreateNumber(defaultCell);
+    cJSON_AddItemToObject(parent, "defaultcell",jsonDefaultCell);
 
     jsonCellTypes = cJSON_CreateArray();
     cJSON_AddItemToObject(parent, "celltypes", jsonCellTypes);
@@ -87,32 +219,67 @@ char *PrintJson(void) {
         jsonB = cJSON_CreateNumber(cellTypes[i].color.b);
         cJSON_AddItemToObject(jsonColor, "b", jsonB);
 
+        jsonA = cJSON_CreateNumber(cellTypes[i].color.a);
+        cJSON_AddItemToObject(jsonColor, "a", jsonA);
+
         jsonName = cJSON_CreateString(cellTypes[i].name);
         cJSON_AddItemToObject(jsonCellType, "name", jsonName);
 
         jsonTargetRelationships = cJSON_CreateArray();
-        cJSON_AddItemToObject(jsonCellType, "targetcellrelationship", jsonTargetRelationships);
+        cJSON_AddItemToObject(jsonCellType, "targetcellrelationships", jsonTargetRelationships);
 
         for(int x = 0; x < MAX_RELATIONSHIPS; x++) {
-            cJSON *jsonTargetRelationship = cJSON_CreateObject();
-            cJSON_AddItemToArray(jsonTargetRelationships, jsonTargetRelationship);
+            if(cellTypes[i].targetCellRelationship[x] != 0) {
+                cJSON *jsonTargetRelationship = cJSON_CreateObject();
+                cJSON_AddItemToArray(jsonTargetRelationships, jsonTargetRelationship);
 
-            jsonTargetIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->targetCellTypeIndex);
-            cJSON_AddItemToObject(jsonTargetRelationship, "targetindex", jsonTargetIndex);
+                jsonTargetIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->targetCellTypeIndex);
+                cJSON_AddItemToObject(jsonTargetRelationship, "targetindex", jsonTargetIndex);
 
-            jsonRelationshipType = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->relationshipType);
-            cJSON_AddItemToObject(jsonTargetRelationship, "relationshiptype", jsonRelationshipType);
+                jsonRelationshipType = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->relationshipType);
+                cJSON_AddItemToObject(jsonTargetRelationship, "relationshiptype", jsonRelationshipType);
 
-            jsonAmount = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->amount);
-            cJSON_AddItemToObject(jsonTargetRelationship, "amount", jsonAmount);
+                jsonAmount = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->amount);
+                cJSON_AddItemToObject(jsonTargetRelationship, "amount", jsonAmount);
 
-            jsonRelationshipIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->index);
-            cJSON_AddItemToObject(jsonTargetRelationship, "index", jsonRelationshipIndex);
+                jsonToAmount = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->toAmount);
+                cJSON_AddItemToObject(jsonTargetRelationship, "toamount", jsonToAmount);
 
-            jsonResultIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->resultCellTypeIndex);
-            cJSON_AddItemToObject(jsonResultIndex, "resultindex", jsonResultIndex);
+                jsonRelationshipIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->index);
+                cJSON_AddItemToObject(jsonTargetRelationship, "index", jsonRelationshipIndex);
+
+                jsonResultIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->resultCellTypeIndex);
+                cJSON_AddItemToObject(jsonTargetRelationship, "resultindex", jsonResultIndex);
+            }
         }
     }
+
+    // TEDO Make Cells saving as a boolean
+    //jsonCells = cJSON_CreateArray();
+    //cJSON_AddItemToObject(parent, "cells", jsonCells);
+
+    // int usedIndex = 0;
+
+    // for(int x = 0; x < MAX_CELLS_X; x++) {
+    //     for(int y = 0; y < MAX_CELLS_Y; y++) {
+    //         jsonCell = cJSON_CreateObject();
+    //         if(jsonCell == NULL) { // TEDO I Need to do this check at the rest of the json initializers
+    //             goto end;
+    //         }
+    //         cJSON_AddItemToArray(jsonCells, jsonCell);
+
+    //         jsonCellIndex = cJSON_CreateNumber(usedIndex);
+    //         cJSON_AddItemToObject(jsonCell, "cellindex", jsonCellIndex);
+            
+    //         jsonCellTypeIndex = cJSON_CreateNumber(cells[x][y]);
+    //         cJSON_AddItemToObject(jsonCell, "celltypeindex", jsonCellTypeIndex);
+
+    //         usedIndex++;
+
+    //         SetWindowTitle(TextFormat("%i", usedIndex));
+
+    //     }
+    // }
 
     string = cJSON_Print(parent);
     if(string == NULL) {
@@ -125,16 +292,18 @@ char *PrintJson(void) {
 }
 
 void Setup() {
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Cellular Fun");
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
+    InitWindow(active_width, active_height, "Cellular Fun");
 
-    fileDialogState = InitGuiFileDialog(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, GetWorkingDirectory(), false);
+    fileDialogState = InitGuiFileDialog(active_width / 2, active_height / 2, GetWorkingDirectory(), false);
     char fileNameToLoad[512] = { 0 };
     
     font = LoadFont("resources/fonts/setback.png");
-    camera.target = (Vector2) { (SCREEN_WIDTH / 2) , (SCREEN_HEIGHT / 2)};
+    camera.target = (Vector2) { (active_width / 2) , (active_height / 2)};
     camera.offset = camera.target;
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
+
 
     SetupCells(); 
 
@@ -150,7 +319,10 @@ void Loop() {
     SetExitKey(0); // This way I set the exit key. Atm, on Escape, it exits
     //DisableCursor();
     while(WindowShouldClose() == false) {
-        generationFramesCounter+= generationSpeedMultiplier;
+        int display = GetCurrentMonitor();
+        active_width = GetScreenWidth();
+        active_height = GetScreenHeight();
+        generationFramesCounter+= generationSpeedMultiplier * generationPerSeconds;
 
         if(IsKeyPressed(KEY_LEFT_SHIFT)) {
             isMovingFast = true;
@@ -166,10 +338,82 @@ void Loop() {
             }
         }
 
+        if(IsKeyPressed(KEY_SPACE)) {
+            if(isShowingUI == false) {
+                generationFramesCounter = 0;
+                LoopCells();
+            }
+        }
+
+        if (IsKeyPressed(KEY_ENTER) && (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)))
+ 		{
+            // see what display we are on right now
+ 			
+ 
+            
+            if (IsWindowFullscreen())
+            {
+                // if we are full screen, then go back to the windowed size
+                SetWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+                active_width = GetMonitorWidth(display);
+                active_height = GetMonitorHeight(display);
+                
+            }
+            else
+            {
+                // if we are not full screen, set the window size to match the monitor we are on
+                SetWindowSize(GetMonitorWidth(display), GetMonitorHeight(display));
+                active_width = GetMonitorWidth(display);
+                active_height = GetMonitorHeight(display);
+            }
+ 
+            // toggle the state
+ 			ToggleFullscreen();
+ 		}
+
         if(fileDialogState.SelectFilePressed) {
             if(IsFileExtension(fileDialogState.fileNameText, ".json")) {
-                strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
-                PrintJson();
+                if(isSavingFile) {
+                    strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
+                    fp = fopen(fileNameToLoad, "w");
+
+                    if(fp == NULL) {
+                        fprintf(stderr, "Failed to open file. \n"); // TEDO Add file name
+                        exit(1);
+                    }
+
+                    fprintf(fp, PrintJson());
+                    strcpy(fileDialogState.fileNameText, "\0");
+                    strcpy(fileDialogState.fileNameTextCopy, fileDialogState.fileNameText);
+                    fileDialogState.filesListActive = -1;
+                    fileDialogState.prevFilesListActive = fileDialogState.filesListActive;
+                    fclose(fp);
+                } else {
+                    //TEDO Load file and clear the cells with the new default cell
+                    strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
+                    fp = fopen(fileNameToLoad, "r");
+
+                    fseek(fp, 0, SEEK_END);
+                    long fsize = ftell(fp);
+                    fseek(fp, 0, SEEK_SET);
+
+
+                    char *buf = malloc(fsize + 1);
+                    size_t nread;
+
+                    if(buf == NULL) {
+                        // TEDO throw error for malloc fail
+                    }
+
+                    fread(buf, 1, fsize, fp);
+                    ParseJson(buf);
+                    
+                    strcpy(fileDialogState.fileNameText, "\0");
+                    strcpy(fileDialogState.fileNameTextCopy, fileDialogState.fileNameText);
+                    fileDialogState.filesListActive = -1;
+                    fileDialogState.prevFilesListActive = fileDialogState.filesListActive;
+                    fclose(fp);
+                }
             }
         }
 
@@ -177,8 +421,8 @@ void Loop() {
         Vector2 mouseToWorldPosition = GetScreenToWorld2D(GetMousePosition(), camera);
         
         if(selectedCellType > -1 && isShowingUI == false && isMouseOverUI == false && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-            int mouseX = (mouseToWorldPosition.x) / (CELL_SIZE + CELL_SEPARATION) + 1;
-            int mouseY = (mouseToWorldPosition.y) / (CELL_SIZE + CELL_SEPARATION) + 1;
+            int mouseX = (mouseToWorldPosition.x) / (CELL_SIZE + CELL_SEPARATION);
+            int mouseY = (mouseToWorldPosition.y) / (CELL_SIZE + CELL_SEPARATION);
 
             if(mouseX >= 0 && mouseX < MAX_CELLS_X) {
                 if(mouseY >= 0 && mouseY < MAX_CELLS_Y) {
@@ -275,10 +519,10 @@ void UpdateMyCamera() {
     if (camera.zoom > MAX_CAMERA_ZOOM) camera.zoom = MAX_CAMERA_ZOOM;
     else if (camera.zoom < MIN_CAMERA_ZOOM) camera.zoom = MIN_CAMERA_ZOOM;
 
-    int zoomXTo = SCREEN_WIDTH * camera.zoom;
-    int zoomYTo = SCREEN_HEIGHT * camera.zoom;
-    int temp_cam_w = (zoomXTo - SCREEN_WIDTH) / 25;
-    int temp_cam_h = (zoomYTo - SCREEN_HEIGHT) / 25;
+    int zoomXTo = active_width * camera.zoom;
+    int zoomYTo = active_height * camera.zoom;
+    int temp_cam_w = (zoomXTo - active_width) / 25;
+    int temp_cam_h = (zoomYTo - active_height) / 25;
 
     int temp_cam_w_half = temp_cam_w / 2;
     int temp_cam_h_half = temp_cam_h / 2;
@@ -305,6 +549,12 @@ void AnimateOpeningMenu() {
 }
 
 void HandleUI() {  
+
+    //leftUIBackground.x = - (0.2 * active_width);
+    //leftUIBackground.y = 0;
+    leftUIBackground.width = 0.2 * active_width;
+    leftUIBackground.height = active_height;
+
     if(isShowingUI == true) {
         if(isUIAnimationFinished == false) {
             AnimateOpeningMenu();
@@ -328,14 +578,14 @@ void HandleUI() {
             if(GuiButton((Rectangle) {contentPositionX, 0.62 * SCREEN_HEIGHT, 100, 20}, "Add Cell Type")) {
                 textBoxSelected = false;
                 isShowingCreateCellTypeDialog = true;
-                if(selectedIndex == -1) { // TEDO remove this if
+                //if(selectedIndex == -1) { // TEDO remove this if
                     for(int i = 0; i < MAX_CELLTYPES; i++) {
                         if(cellTypes[i].index == -1) {
                             selectedIndex = i;
                             break;
                         }
                     }
-                }
+                //}
                 selectedColor = WHITE;
                 selectedNeighbourType = 0;
                 letterCount = 0;
@@ -351,10 +601,12 @@ void HandleUI() {
                     newTargetRelationShips[i].targetCellTypeIndex = 0;
                 }
             }
-            if(GuiButton((Rectangle) {contentPositionX, 0.66 * SCREEN_HEIGHT, 100, 20}, "Save File")) {
-                exit(0);
+            if(GuiButton((Rectangle) {contentPositionX, 0.66 * SCREEN_HEIGHT, 100, 20}, "Save Rule")) {
+                isSavingFile = true;
+                fileDialogState.fileDialogActive = true;
             }
-            if(GuiButton((Rectangle) {contentPositionX, 0.70 * SCREEN_HEIGHT, 100, 20}, "Load File")) {
+            if(GuiButton((Rectangle) {contentPositionX, 0.70 * SCREEN_HEIGHT, 100, 20}, "Load Rule")) {
+                isSavingFile = false;
                 fileDialogState.fileDialogActive = true;
             }
             if(GuiButton((Rectangle) {contentPositionX, 0.74 * SCREEN_HEIGHT, 100, 20}, "Exit Application")) {

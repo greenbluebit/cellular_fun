@@ -9,15 +9,18 @@
 #define DIALOG_VIEW_PERCENT             0.25f
 #define DIALOG_CONTENT_PERC             0.241f
 
-#define MIN_GENERATION_SPEED_MULTIPLIER 1
-#define MAX_GENERATION_SPEED_MULTIPLIER 3
+#define MIN_GENERATION_SPEED_MULTIPLIER 0
+#define MAX_GENERATION_SPEED_MULTIPLIER 4
 
 #define MIN_BRUSH_SIZE                  0
 #define MAX_BRUSH_SIZE                  2
 
+int active_width = SCREEN_WIDTH;
+int active_height = SCREEN_HEIGHT;
+
 // UI
 int framesCounter = 0;
-Rectangle leftUIBackground = {- (0.2 * SCREEN_WIDTH), 0, 0.2 * SCREEN_WIDTH, SCREEN_HEIGHT, LIGHTGRAY};
+Rectangle leftUIBackground = {- (0.2 * SCREEN_WIDTH), 0, 0.2 * SCREEN_WIDTH, SCREEN_HEIGHT};
 Vector2 mousePosition;
 bool isMouseOverUI = false;
 bool isShowingUI = false;
@@ -35,7 +38,6 @@ char newCellName[MAX_NAME_LENGTH];
 int cellNameCount = 0;
 bool mouseOnText = false;
 int selectedIndex = -1;
-Rectangle cellNameTextBox = {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 100, 50};
 struct TargetCellRelationship newTargetRelationShips[MAX_RELATIONSHIPS];
 
 int neighbourType = 0;
@@ -62,8 +64,10 @@ bool textBoxSelected = false;
 bool isDefault = false;
 int defaultCell = 0;
 
-int generationSpeedMultiplier = 1;
-const char *generationSpeedMultiplierNames[MAX_GENERATION_SPEED_MULTIPLIER] = {"Slow", "Fast", "Fastest"};
+int generationSpeedMultiplier = 0;
+const char *generationSpeedMultiplierNames[MAX_GENERATION_SPEED_MULTIPLIER + 1] = {"Stop", "Slowest", "Slow", "Fast", "Fastest"};
+int generationFramesCounter = 0;
+int generationPerSeconds = 8;
 
 int brushSize = 0;
 const char *brushSizeNames[MAX_BRUSH_SIZE + 1] = {"Small", "Medium", "Large"};
@@ -73,6 +77,10 @@ void HandleEditCellUI();
 void HandleRunningMenuUI();
 
 void HandleRunningMenuUI() {
+    sidePanel.x = active_width * 0.94;
+    sidePanel.width = active_width * 0.06;
+    sidePanel.height = active_height;
+
     DrawRectangleRec(sidePanel, Fade(LIGHTGRAY, uiTransparency));
 
     if(CheckCollisionPointRec(GetMousePosition(), sidePanel)) {
@@ -81,11 +89,12 @@ void HandleRunningMenuUI() {
         isMouseOverUI = false;
     }
 
+    int cellIndex = 0;
     // Cells Menu
     for(int i = 0; i < MAX_CELLTYPES; i++) {
         if(cellTypes[i].index > -1) {
-            int cellPositionX = 0.97 * SCREEN_WIDTH;
-            int cellPositionY = 0.13 * SCREEN_HEIGHT + 0.05*SCREEN_HEIGHT * i;
+            int cellPositionX = 0.97 * active_width;
+            int cellPositionY = 0.13 * active_height + 0.05 * active_height * cellIndex;
             int cellWidth = 25;
             int cellHeight = 25;
             if(CheckCollisionPointRec(mousePosition,
@@ -100,6 +109,7 @@ void HandleRunningMenuUI() {
                 selectedIndex = i;
                 selectedColor = cellTypes[selectedIndex].color;
                 selectedNeighbourType = cellTypes[selectedIndex].neighbourType;
+                letterCount = 0;
                 if(defaultCell == selectedIndex) {
                     isDefault = true;
                 } else {
@@ -116,6 +126,7 @@ void HandleRunningMenuUI() {
                 for(int x = 0; x < MAX_RELATIONSHIPS; x++) {
                     if(cellTypes[selectedIndex].targetCellRelationship[x] != 0 && cellTypes[selectedIndex].targetCellRelationship[x]->index > -1) {
                         newTargetRelationShips[x].amount = cellTypes[selectedIndex].targetCellRelationship[x]->amount;
+                        newTargetRelationShips[x].toAmount = cellTypes[selectedIndex].targetCellRelationship[x]->toAmount;
                         newTargetRelationShips[x].index = cellTypes[selectedIndex].targetCellRelationship[x]->index;
                         newTargetRelationShips[x].relationshipType = cellTypes[selectedIndex].targetCellRelationship[x]->relationshipType;
                                                     
@@ -123,6 +134,7 @@ void HandleRunningMenuUI() {
                         newTargetRelationShips[x].targetCellTypeIndex = cellTypes[selectedIndex].targetCellRelationship[x]->targetCellTypeIndex;
                     } else {
                         newTargetRelationShips[x].amount = 0;
+                        newTargetRelationShips[x].toAmount = 0;
                         newTargetRelationShips[x].index = -1;
                         newTargetRelationShips[x].relationshipType = 0;
                                                     
@@ -145,11 +157,39 @@ void HandleRunningMenuUI() {
             if(selectedCellType == cellTypes[i].index) {
                 DrawRectangleLines(cellPositionX, cellPositionY, cellWidth + 1, cellHeight + 1, BLACK);
             }
+
+            cellIndex++;
         }
     }
-    DrawText("Cells", 0.97 * SCREEN_WIDTH, 0.1 * SCREEN_HEIGHT, 10, BLACK);
+    DrawText("Cells", 0.97 * active_width, 0.1 * active_height, 10, BLACK);
 
-    if(GuiButton((Rectangle) {0.95 * SCREEN_WIDTH, 0.84 * SCREEN_HEIGHT, 60, 20}, brushSizeNames[brushSize])) {
+    isWrapping = GuiCheckBox((Rectangle) {0.955 * active_width, 0.72 * active_height, 0.015 * active_width, 20}, "Wrap", isWrapping);
+
+    if(GuiButton((Rectangle) {0.95 * active_width, 0.76 * active_height, 0.04 * active_width, 20}, "Generate")) {
+        int types_amount = 0;
+        for(int i = 0; i < MAX_CELLTYPES; i++) {
+            if(cellTypes[i].index > -1) {
+                types_amount++;
+            }
+        }
+        int generatingCellTypes[types_amount];
+        int generatingTypeIndex = 0;
+        for(int i = 0; i < MAX_CELLTYPES; i++) {
+            if(cellTypes[i].index > -1) {
+                generatingCellTypes[generatingTypeIndex] = cellTypes[i].index;
+                generatingTypeIndex++;
+            }
+        }
+        
+        for(int x = 0; x < MAX_CELLS_X; x++) {
+            for(int y = 0; y < MAX_CELLS_Y; y++) {
+                finalCells[x][y] = generatingCellTypes[GetRandomValue(0, types_amount - 1)];
+                cells[x][y] = finalCells[x][y];
+            }
+        }
+    }
+
+    if(GuiButton((Rectangle) {0.95 * active_width, 0.80 * active_height, 0.04 * active_width, 20}, brushSizeNames[brushSize])) {
         if(brushSize >= MAX_BRUSH_SIZE) {
             brushSize = MIN_BRUSH_SIZE;
         } else {
@@ -157,7 +197,12 @@ void HandleRunningMenuUI() {
         }
     }
 
-    if(GuiButton((Rectangle) {0.95 * SCREEN_WIDTH, 0.88 * SCREEN_HEIGHT, 60, 20}, generationSpeedMultiplierNames[generationSpeedMultiplier - 1])) {
+    if(GuiButton((Rectangle) {0.95 * active_width, 0.84 * active_height, 0.04 * active_width, 20}, "Step")) {
+        generationFramesCounter = 0;
+        LoopCells();
+    }
+
+    if(GuiButton((Rectangle) {0.95 * active_width, 0.88 * active_height, 0.04 * active_width, 20}, generationSpeedMultiplierNames[generationSpeedMultiplier])) {
         if(generationSpeedMultiplier >= MAX_GENERATION_SPEED_MULTIPLIER) {
             generationSpeedMultiplier = MIN_GENERATION_SPEED_MULTIPLIER;
         } else {
@@ -165,7 +210,7 @@ void HandleRunningMenuUI() {
         }
     }
 
-    if(GuiButton((Rectangle) {0.95 * SCREEN_WIDTH, 0.92 * SCREEN_HEIGHT, 60, 20}, "Clear")) {
+    if(GuiButton((Rectangle) {0.95 * active_width, 0.92 * active_height, 0.04 * active_width, 20}, "Clear")) {
         for(int x = 0; x < MAX_CELLS_X; x++) {
             for(int y = 0; y < MAX_CELLS_Y; y++) {
                 finalCells[x][y] = defaultCell;
@@ -174,13 +219,21 @@ void HandleRunningMenuUI() {
         }
     }
 
-    if(GuiButton((Rectangle) {0.95 * SCREEN_WIDTH, 0.96 * SCREEN_HEIGHT, 60, 20}, isShowingUI == false ? "Pause" : "Resume")) {
+    if(GuiButton((Rectangle) {0.95 * active_width, 0.96 * active_height, 0.04 * active_width, 20}, isShowingUI == false ? "Pause" : "Resume")) {
         isShowingUI = !isShowingUI;
     }
 }
 
 void HandleEditCellUI() {
-    float dialogHolderHeight = ((DIALOG_VIEW_PERCENT + 0.30f) * SCREEN_HEIGHT);
+    panelRec.x = 0.5 * active_width - (DIALOG_VIEW_PERCENT * active_width) / 2;
+    panelRec.y = 0.6 * active_height - (DIALOG_VIEW_PERCENT * active_height) / 2;
+    panelRec.width = DIALOG_VIEW_PERCENT * active_width;
+    panelRec.height = DIALOG_VIEW_PERCENT * active_height;
+    
+    panelContentRec.width = DIALOG_CONTENT_PERC * active_width;
+    panelContentRec.height = 0.65 * active_height;
+    
+    float dialogHolderHeight = ((DIALOG_VIEW_PERCENT + 0.30f) * active_height);
     float dialogHolderWidthExtra = 40;
     int dialogHolderPosX = panelRec.x - dialogHolderWidthExtra / 2;
     int dialogHolderPosY = panelRec.y - dialogHolderHeight * 0.45f;
@@ -274,6 +327,7 @@ void HandleEditCellUI() {
             if(newTargetRelationShips[i].index == -1) {
                 newTargetRelationShips[i].index = i;
                 newTargetRelationShips[i].amount = 0;
+                newTargetRelationShips[i].toAmount = 0;
                 newTargetRelationShips[i].relationshipType = 0;
                 newTargetRelationShips[i].resultCellTypeIndex = 0;
                 newTargetRelationShips[i].targetCellTypeIndex = 0;
@@ -294,10 +348,17 @@ void HandleEditCellUI() {
             DrawText("Target:", panelRec.x + panelScroll.x + 10, panelRec.y + panelScroll.y + 10 + relationshipCounter * relationShipSpaceSeparator, 8, BLACK);
 
             if(GuiButton((Rectangle) {panelRec.x + panelScroll.x + 10, panelRec.y + panelScroll.y + 25 + relationshipCounter * relationShipSpaceSeparator, 60, 20}, cellTypes[newTargetRelationShips[i].targetCellTypeIndex].name )) {
-                if(newTargetRelationShips[i].targetCellTypeIndex >= MAX_CELLTYPES - 1) {
-                    newTargetRelationShips[i].targetCellTypeIndex = 0;
-                } else {
-                    newTargetRelationShips[i].targetCellTypeIndex++;
+                int tempIndex = newTargetRelationShips[i].targetCellTypeIndex;
+                while(true) {
+                    if(tempIndex >= MAX_CELLTYPES - 1) {
+                        tempIndex = 0;
+                    } else {
+                        tempIndex++;
+                    }
+                    if(cellTypes[tempIndex].index != -1) {
+                        newTargetRelationShips[i].targetCellTypeIndex = tempIndex;
+                        break;
+                    }                    
                 }
             }
 
@@ -314,19 +375,37 @@ void HandleEditCellUI() {
             DrawText("Result:", panelRec.x + panelScroll.x + 160, panelRec.y + panelScroll.y + 10 + relationshipCounter * relationShipSpaceSeparator, 8, BLACK);
 
             if(GuiButton((Rectangle) {panelRec.x + panelScroll.x + 160, panelRec.y + panelScroll.y + 25 + relationshipCounter * relationShipSpaceSeparator, 60, 20}, cellTypes[newTargetRelationShips[i].resultCellTypeIndex].name)) {
-                if(newTargetRelationShips[i].resultCellTypeIndex >= MAX_CELLTYPES - 1) {
-                    newTargetRelationShips[i].resultCellTypeIndex = 0;
-                } else {
-                    newTargetRelationShips[i].resultCellTypeIndex++;
+                int tempIndex = newTargetRelationShips[i].resultCellTypeIndex;
+                while(true) {
+                    if(tempIndex >= MAX_CELLTYPES - 1) {
+                        tempIndex = 0;
+                    } else {
+                        tempIndex++;
+                    }
+                    if(cellTypes[tempIndex].index != -1) {
+                        newTargetRelationShips[i].resultCellTypeIndex = tempIndex;
+                        break;
+                    }                    
                 }
             }
 
             DrawText("Amount:", panelRec.x + panelScroll.x + 240, panelRec.y + panelScroll.y + 10 + relationshipCounter * relationShipSpaceSeparator, 8, BLACK);
-            if(GuiButton((Rectangle) {panelRec.x + panelScroll.x + 245, panelRec.y + panelScroll.y + 25 + relationshipCounter * relationShipSpaceSeparator, 20, 20}, TextFormat("%i", newTargetRelationShips[i].amount))) {
+            
+            
+            if(GuiButton((Rectangle) {panelRec.x + panelScroll.x + (newTargetRelationShips[i].relationshipType != 7 ? 245 : 233), panelRec.y + panelScroll.y + 25 + relationshipCounter * relationShipSpaceSeparator, 20, 20}, TextFormat("%i", newTargetRelationShips[i].amount))) {
                 if(newTargetRelationShips[i].amount >= 9 -1) {
                     newTargetRelationShips[i].amount = 0;
                 } else {
                     newTargetRelationShips[i].amount++;
+                }
+            }
+            if(newTargetRelationShips[i].relationshipType == 7) {
+                if(GuiButton((Rectangle) {panelRec.x + panelScroll.x + 258, panelRec.y + panelScroll.y + 25 + relationshipCounter * relationShipSpaceSeparator, 20, 20}, TextFormat("%i", newTargetRelationShips[i].toAmount))) {
+                    if(newTargetRelationShips[i].toAmount >= 9 -1) {
+                        newTargetRelationShips[i].toAmount = 0;
+                    } else {
+                        newTargetRelationShips[i].toAmount++;
+                    }
                 }
             }
 
@@ -350,6 +429,7 @@ void HandleEditCellUI() {
         for(int x = 0; x < MAX_RELATIONSHIPS; x++) {
             cellTypes[selectedIndex].targetCellRelationship[x] = malloc(sizeof(T_TargetCellRelationship));
             cellTypes[selectedIndex].targetCellRelationship[x]->amount = newTargetRelationShips[x].amount;
+            cellTypes[selectedIndex].targetCellRelationship[x]->toAmount = newTargetRelationShips[x].toAmount;
             cellTypes[selectedIndex].targetCellRelationship[x]->index = newTargetRelationShips[x].index;
             cellTypes[selectedIndex].targetCellRelationship[x]->relationshipType = newTargetRelationShips[x].relationshipType;
                                         
@@ -360,5 +440,28 @@ void HandleEditCellUI() {
         
         
         isShowingCreateCellTypeDialog = false;
+    }
+
+    if(GuiButton((Rectangle) {dialogHolderPosX + panelRec.width + dialogHolderWidthExtra - 120, dialogHolderPosY + dialogHolderHeight - 30, 100, 20}, "Delete")) {
+        if(isDefault == false) {
+            cellTypes[selectedIndex].color = WHITE;
+            cellTypes[selectedIndex].index = -1;
+            strcpy(cellTypes[selectedIndex].name, "UNSET");
+            cellTypes[selectedIndex].neighbourType = 0;
+            
+            for(int x = 0; x < MAX_RELATIONSHIPS; x++) {
+                free(cellTypes[selectedIndex].targetCellRelationship[x]);
+            }
+            selectedIndex = -1;
+
+            for(int x = 0; x < MAX_CELLS_X; x++) {
+                for(int y = 0; y < MAX_CELLS_Y; y++) {
+                    finalCells[x][y] = defaultCell;
+                    cells[x][y] = defaultCell;
+                }
+            }
+                        
+            isShowingCreateCellTypeDialog = false;
+        }
     }
 }

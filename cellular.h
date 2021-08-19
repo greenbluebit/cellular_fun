@@ -4,15 +4,17 @@
 #define MAX_CELLS_X             500
 #define MAX_CELLS_Y             500
 #define MAX_CELLTYPES           10
-#define MAX_RELATIONSHIP_TYPES  7
+#define MAX_RELATIONSHIP_TYPES  8
 
 
 struct CellType cellTypes[MAX_CELLTYPES];
 const char *relationshipTypes[MAX_RELATIONSHIP_TYPES] =
-{"equal", "notequal", "less", "lessequal", "more", "moreequal", "self"};
+{"equal", "notequal", "less", "lessequal", "more", "moreequal", "self", "between"};
 
 int cells[MAX_CELLS_X] [MAX_CELLS_Y] = { 0 };
 int finalCells [MAX_CELLS_X] [MAX_CELLS_Y] = { 0 };
+
+bool isWrapping = true;
 
 void SetupCells() {
     for(int i = 0; i < MAX_CELLTYPES; i++) {
@@ -78,6 +80,11 @@ void LoopCells() {
                     } else if(strcmp(relationshipTypes[cellTypes[cellIndex].targetCellRelationship[i]->relationshipType], "self") == 0) {
                         cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
                         relationshipFullfilled = true;
+                    } else if(strcmp(relationshipTypes[cellTypes[cellIndex].targetCellRelationship[i]->relationshipType], "between") == 0) {
+                        if(neighbours >= cellTypes[cellIndex].targetCellRelationship[i]->amount && neighbours <= cellTypes[cellIndex].targetCellRelationship[i]->toAmount) {
+                            cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->resultCellTypeIndex;
+                            relationshipFullfilled = true;
+                        }                        
                     }
 
                     if(relationshipFullfilled == true) {
@@ -97,26 +104,29 @@ void LoopCells() {
 int getGridNeighbours(int gridX, int gridY, int cells[MAX_CELLS_X] [MAX_CELLS_Y], int targetNeighbourIndex) {
     int result = 0;
     if(cellTypes[cells[gridX][gridY]].neighbourType == 0) {
-        result += gridX - 1 >= 0 && cellTypes[cells[gridX - 1][gridY]].index == targetNeighbourIndex ? 1 : 0;
-        result += gridX + 1 < MAX_CELLS_X && cellTypes[cells[gridX + 1][gridY]].index == targetNeighbourIndex ? 1 : 0;
-        result += gridY - 1 >= 0 && cellTypes[cells[gridX][gridY - 1]].index == targetNeighbourIndex ? 1 : 0;
-        result += gridY + 1 < MAX_CELLS_Y && cellTypes[cells[gridX][gridY + 1]].index == targetNeighbourIndex ? 1 : 0;
-    } else if(cellTypes[cells[gridX][gridY]].neighbourType  == 1) {
         for(int neighbourX = gridX - 1; neighbourX <= gridX + 1; neighbourX++) {
             for(int neighbourY = gridY - 1; neighbourY <= gridY + 1; neighbourY++) {
-                if(neighbourX >= 0 && neighbourX < MAX_CELLS_X && neighbourY >= 0 && neighbourY < MAX_CELLS_Y) {
-                    if((neighbourX != gridX || neighbourY != gridY) && cellTypes[cells[neighbourX][neighbourY]].index == targetNeighbourIndex) {
-                        result += 1;
-                    }
+                int tempNeighbourX = neighbourX >= 0 && neighbourX < MAX_CELLS_X ? neighbourX : neighbourX <= 0 && isWrapping ? MAX_CELLS_X - 1 : neighbourX >= MAX_CELLS_X && isWrapping ? 0 : -1;
+                int tempNeighbourY = neighbourY >= 0 && neighbourY < MAX_CELLS_Y ? neighbourY : neighbourY <= 0 && isWrapping ? MAX_CELLS_Y - 1 : neighbourY >= MAX_CELLS_Y && isWrapping ? 0 : -1;
+                
+                if(( (tempNeighbourX != gridX || tempNeighbourY != gridY) && tempNeighbourX >= 0 && tempNeighbourX < MAX_CELLS_X 
+                        && tempNeighbourY >= 0 && tempNeighbourY < MAX_CELLS_Y && cellTypes[cells[tempNeighbourX][tempNeighbourY]].index == targetNeighbourIndex) ) {
+                    result += 1;
                 }
             }
         }
+        
+    } else if(cellTypes[cells[gridX][gridY]].neighbourType  == 1) {
+        result += (gridX - 1 >= 0 && cellTypes[cells[gridX - 1][gridY]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[MAX_CELLS_X - 1] [gridY]].index == targetNeighbourIndex) ? 1 : 0;
+        result += (gridX + 1 < MAX_CELLS_X && cellTypes[cells[gridX + 1][gridY]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[0][gridY]].index == targetNeighbourIndex) ? 1 : 0;
+        result += (gridY - 1 >= 0 && cellTypes[cells[gridX][gridY - 1]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[gridX][MAX_CELLS_Y - 1]].index == targetNeighbourIndex) ? 1 : 0;
+        result += (gridY + 1 < MAX_CELLS_Y && cellTypes[cells[gridX][gridY + 1]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[gridX][0]].index == targetNeighbourIndex) ? 1 : 0;
     } else if(cellTypes[cells[gridX][gridY]].neighbourType  == 2) {
-        result += gridY - 1 >= 0 && cellTypes[cells[gridX][gridY - 1]].index == targetNeighbourIndex ? 1 : 0;
-        result += gridY + 1 < MAX_CELLS_Y && cellTypes[cells[gridX][gridY + 1]].index == targetNeighbourIndex ? 1 : 0;
+        result += (gridY - 1 >= 0 && cellTypes[cells[gridX][gridY - 1]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[gridX][MAX_CELLS_Y - 1]].index == targetNeighbourIndex) ? 1 : 0;
+        result += (gridY + 1 < MAX_CELLS_Y && cellTypes[cells[gridX][gridY + 1]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[gridX][0]].index == targetNeighbourIndex) ? 1 : 0;
     } else if(cellTypes[cells[gridX][gridY]].neighbourType  == 3) {
-        result += gridX - 1 >= 0 && cellTypes[cells[gridX - 1][gridY]].index == targetNeighbourIndex ? 1 : 0;
-        result += gridX + 1 < MAX_CELLS_X && cellTypes[cells[gridX + 1][gridY]].index == targetNeighbourIndex ? 1 : 0;
+        result += (gridX - 1 >= 0 && cellTypes[cells[gridX - 1][gridY]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[MAX_CELLS_X - 1] [gridY]].index == targetNeighbourIndex) ? 1 : 0;
+        result += (gridX + 1 < MAX_CELLS_X && cellTypes[cells[gridX + 1][gridY]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[0][gridY]].index == targetNeighbourIndex) ? 1 : 0;
     }
 
     return result;

@@ -36,12 +36,16 @@ struct CellType {
 // more
 // moreequal
 // self
+// between
 struct TargetCellRelationship {
     //struct CellType *targetCellType;
     int targetCellTypeIndex;
     int relationshipType;
     int amount;
+    int toAmount;
     int index;
     int resultCellTypeIndex;
     //struct CellType *resultCellType;
 } T_TargetCellRelationship;
+
+// TEDO toAmount is temporary, instead I should support some sort of grouping functionality

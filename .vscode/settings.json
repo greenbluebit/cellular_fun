@@ -15,6 +15,8 @@
 		"stdio.h": "c",
 		"raygui.h": "c",
 		"gui_file_dialog.h": "c",
-		"typeinfo": "c"
+		"typeinfo": "c",
+		"cjson.h": "c",
+		"*.m": "c"
 	}
 }
