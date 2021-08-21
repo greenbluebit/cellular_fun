@@ -22,6 +22,9 @@ FILE *fp;
 bool isSavingFile = false;
 
 bool isMovingFast = false;
+bool isMousePressed = false;
+int lastMouseX = -1;
+int lastMouseY = -1;
 
 Camera2D camera = { 0 };
 
@@ -32,6 +35,8 @@ int testSize = 0;
 // PROTOTYPES
 void UpdateMyCamera();
 void HandleUI();
+void Loop();
+void ApplyMouseClick(int mouseX, int mouseY);
 
 int ParseJson(char *string) {
     int status = 0;
@@ -172,6 +177,14 @@ char *PrintJson() {
     cJSON *jsonA = NULL;
     cJSON *jsonName = NULL;
     cJSON *jsonTargetRelationships = NULL;
+    cJSON *bottomLeft = NULL;
+    cJSON *bottom = NULL;
+    cJSON *bottomRight = NULL;
+    cJSON *right = NULL;
+    cJSON *topRight = NULL;
+    cJSON *top = NULL;
+    cJSON *topLeft = NULL;
+    cJSON *left = NULL;
     cJSON *jsonTargetIndex = NULL;
     cJSON *jsonRelationshipType = NULL;
     cJSON *jsonAmount = NULL;
@@ -250,6 +263,17 @@ char *PrintJson() {
 
                 jsonResultIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->resultCellTypeIndex);
                 cJSON_AddItemToObject(jsonTargetRelationship, "resultindex", jsonResultIndex);
+
+                if(jsonNeighbourType == NULL) {
+                    cJSON *bottomLeft = NULL;
+                    cJSON *bottom = NULL;
+                    cJSON *bottomRight = NULL;
+                    cJSON *right = NULL;
+                    cJSON *topRight = NULL;
+                    cJSON *top = NULL;
+                    cJSON *topLeft = NULL;
+                    cJSON *left = NULL;
+                }
             }
         }
     }
@@ -311,189 +335,257 @@ void Setup() {
         newTargetRelationShips[i].index = -1;
     }
 
-    SetTargetFPS(60);
+    SetExitKey(0); // This way I set the exit key. Atm, on Escape, it exits
+    //DisableCursor();
+
+    #if defined(PLATFORM_WEB)
+        emscripten_set_main_loop(Loop, 0, 1);
+    #else
+        SetTargetFPS(60);   // Set our game to run at 60 frames-per-second
+
+        while(WindowShouldClose() == false) {
+            Loop();
+        }
+
+        CloseWindow();
+    #endif
 }
 
 void Loop() {
+    int display = GetCurrentMonitor();
+    active_width = GetScreenWidth();
+    active_height = GetScreenHeight();
+    generationFramesCounter+= generationSpeedMultiplier * generationPerSeconds;
 
-    SetExitKey(0); // This way I set the exit key. Atm, on Escape, it exits
-    //DisableCursor();
-    while(WindowShouldClose() == false) {
-        int display = GetCurrentMonitor();
-        active_width = GetScreenWidth();
-        active_height = GetScreenHeight();
-        generationFramesCounter+= generationSpeedMultiplier * generationPerSeconds;
-
-        if(IsKeyPressed(KEY_LEFT_SHIFT)) {
-            isMovingFast = true;
-        }
-        if(IsKeyReleased(KEY_LEFT_SHIFT)) {
-            isMovingFast = false;
-        }
-        if(IsKeyPressed(KEY_ESCAPE)) {
-            isShowingUI = !isShowingUI;
-            // Hiding other UI elements
-            if(isShowingUI == false) {
-                isShowingCreateCellTypeDialog = false;
-            }
-        }
-
-        if(IsKeyPressed(KEY_SPACE)) {
-            if(isShowingUI == false) {
-                generationFramesCounter = 0;
-                LoopCells();
-            }
-        }
-
-        if (IsKeyPressed(KEY_ENTER) && (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)))
- 		{
-            // see what display we are on right now
- 			
- 
-            
-            if (IsWindowFullscreen())
-            {
-                // if we are full screen, then go back to the windowed size
-                SetWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-                active_width = GetMonitorWidth(display);
-                active_height = GetMonitorHeight(display);
-                
-            }
-            else
-            {
-                // if we are not full screen, set the window size to match the monitor we are on
-                SetWindowSize(GetMonitorWidth(display), GetMonitorHeight(display));
-                active_width = GetMonitorWidth(display);
-                active_height = GetMonitorHeight(display);
-            }
- 
-            // toggle the state
- 			ToggleFullscreen();
- 		}
-
-        if(fileDialogState.SelectFilePressed) {
-            if(IsFileExtension(fileDialogState.fileNameText, ".json")) {
-                if(isSavingFile) {
-                    strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
-                    fp = fopen(fileNameToLoad, "w");
-
-                    if(fp == NULL) {
-                        fprintf(stderr, "Failed to open file. \n"); // TEDO Add file name
-                        exit(1);
-                    }
-
-                    fprintf(fp, PrintJson());
-                    strcpy(fileDialogState.fileNameText, "\0");
-                    strcpy(fileDialogState.fileNameTextCopy, fileDialogState.fileNameText);
-                    fileDialogState.filesListActive = -1;
-                    fileDialogState.prevFilesListActive = fileDialogState.filesListActive;
-                    fclose(fp);
-                } else {
-                    //TEDO Load file and clear the cells with the new default cell
-                    strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
-                    fp = fopen(fileNameToLoad, "r");
-
-                    fseek(fp, 0, SEEK_END);
-                    long fsize = ftell(fp);
-                    fseek(fp, 0, SEEK_SET);
-
-
-                    char *buf = malloc(fsize + 1);
-                    size_t nread;
-
-                    if(buf == NULL) {
-                        // TEDO throw error for malloc fail
-                    }
-
-                    fread(buf, 1, fsize, fp);
-                    ParseJson(buf);
-                    
-                    strcpy(fileDialogState.fileNameText, "\0");
-                    strcpy(fileDialogState.fileNameTextCopy, fileDialogState.fileNameText);
-                    fileDialogState.filesListActive = -1;
-                    fileDialogState.prevFilesListActive = fileDialogState.filesListActive;
-                    fclose(fp);
-                }
-            }
-        }
-
-        // Handle Cell Interaction
-        Vector2 mouseToWorldPosition = GetScreenToWorld2D(GetMousePosition(), camera);
-        
-        if(selectedCellType > -1 && isShowingUI == false && isMouseOverUI == false && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-            int mouseX = (mouseToWorldPosition.x) / (CELL_SIZE + CELL_SEPARATION);
-            int mouseY = (mouseToWorldPosition.y) / (CELL_SIZE + CELL_SEPARATION);
-
-            if(mouseX >= 0 && mouseX < MAX_CELLS_X) {
-                if(mouseY >= 0 && mouseY < MAX_CELLS_Y) {
-                    cells[mouseX][mouseY] = selectedCellType;
-                    finalCells[mouseX][mouseY] = cells[mouseX][mouseY];
-
-                    for(int neighbourX = mouseX - brushSize; neighbourX <= mouseX + brushSize; neighbourX++) {
-                        for(int neighbourY = mouseY - brushSize; neighbourY <= mouseY + brushSize; neighbourY++) {
-                            if(neighbourX >= 0 && neighbourX < MAX_CELLS_X && neighbourY >= 0 && neighbourY < MAX_CELLS_Y) {
-                                if((neighbourX != mouseX || neighbourY != mouseY)) {
-                                    cells[neighbourX][neighbourY] = selectedCellType;
-                                    finalCells[neighbourX][neighbourY] = cells[neighbourX][neighbourY];
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if(generationFramesCounter >= TARGET_FPS) {
-            generationFramesCounter = 0;
-            if(isShowingUI == false) {
-                LoopCells();
-            }
-        }
-
-        for(int x = 0; x < MAX_CELLS_X; x++) {
-            for(int y = 0; y < MAX_CELLS_Y; y++) {
-                finalCells[x][y] = cells[x][y];
-            }
-        }
-
-        mousePosition = GetMousePosition();
-
-        UpdateMyCamera();
-        
-        
-        BeginDrawing();
-        
-        ClearBackground(GRAY);
-        
-
-        BeginMode2D(camera);
-        DrawRectangle(-20,-20, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) + 40, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) + 40, BLACK);
-        
-        for(int x = 0; x < MAX_CELLS_X; x++) {
-            for(int y = 0; y < MAX_CELLS_Y; y++) {
-                DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
-                testSize += CELL_SIZE;
-            }
-        }
-
+    if(IsKeyPressed(KEY_LEFT_SHIFT)) {
+        isMovingFast = true;
+    }
+    if(IsKeyReleased(KEY_LEFT_SHIFT)) {
+        isMovingFast = false;
+    }
+    if(IsKeyPressed(KEY_ESCAPE)) {
+        isShowingUI = !isShowingUI;
+        // Hiding other UI elements
         if(isShowingUI == false) {
-            mouseToWorldPosition = GetScreenToWorld2D(GetMousePosition(), camera);
-            DrawRectangle(mouseToWorldPosition.x, mouseToWorldPosition.y, 5, 5, BLACK);
+            isShowingCreateCellTypeDialog = false;
         }
-        
-        EndMode2D();
-
-        HandleUI();
-
-        if (fileDialogState.fileDialogActive) GuiLock();
-        GuiUnlock();
-
-        GuiFileDialog(&fileDialogState);
-
-        EndDrawing();
     }
 
-    CloseWindow();
+    if(IsKeyPressed(KEY_SPACE)) {
+        if(isShowingUI == false) {
+            generationFramesCounter = 0;
+            LoopCells();
+        }
+    }
+
+    if (IsKeyPressed(KEY_ENTER) && (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)))
+    {
+        // see what display we are on right now
+        
+
+        
+        if (IsWindowFullscreen())
+        {
+            // if we are full screen, then go back to the windowed size
+            SetWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+            active_width = GetMonitorWidth(display);
+            active_height = GetMonitorHeight(display);
+            
+        }
+        else
+        {
+            // if we are not full screen, set the window size to match the monitor we are on
+            SetWindowSize(GetMonitorWidth(display), GetMonitorHeight(display));
+            active_width = GetMonitorWidth(display);
+            active_height = GetMonitorHeight(display);
+        }
+
+        // toggle the state
+        ToggleFullscreen();
+    }
+
+    if(fileDialogState.SelectFilePressed) {
+        if(IsFileExtension(fileDialogState.fileNameText, ".json")) {
+            if(isSavingFile) {
+                strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
+                fp = fopen(fileNameToLoad, "w");
+
+                if(fp == NULL) {
+                    fprintf(stderr, "Failed to open file. \n"); // TEDO Add file name
+                    exit(1);
+                }
+
+                fprintf(fp, PrintJson());
+                strcpy(fileDialogState.fileNameText, "\0");
+                strcpy(fileDialogState.fileNameTextCopy, fileDialogState.fileNameText);
+                fileDialogState.filesListActive = -1;
+                fileDialogState.prevFilesListActive = fileDialogState.filesListActive;
+                fclose(fp);
+            } else {
+                //TEDO Load file and clear the cells with the new default cell
+                strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
+                fp = fopen(fileNameToLoad, "r");
+
+                fseek(fp, 0, SEEK_END);
+                long fsize = ftell(fp);
+                fseek(fp, 0, SEEK_SET);
+
+
+                char *buf = malloc(fsize + 1);
+                size_t nread;
+
+                if(buf == NULL) {
+                    // TEDO throw error for malloc fail
+                }
+
+                fread(buf, 1, fsize, fp);
+                ParseJson(buf);
+                
+                strcpy(fileDialogState.fileNameText, "\0");
+                strcpy(fileDialogState.fileNameTextCopy, fileDialogState.fileNameText);
+                fileDialogState.filesListActive = -1;
+                fileDialogState.prevFilesListActive = fileDialogState.filesListActive;
+                fclose(fp);
+            }
+        }
+    }
+
+    // Handle Cell Interaction
+    Vector2 mouseToWorldPosition = GetScreenToWorld2D(GetMousePosition(), camera);
+    
+    if(selectedCellType > -1 && isShowingUI == false && isMouseOverUI == false && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+
+
+        int mouseX = (mouseToWorldPosition.x) / (CELL_SIZE + CELL_SEPARATION);
+        int mouseY = (mouseToWorldPosition.y) / (CELL_SIZE + CELL_SEPARATION);
+
+        // lastMouseX ; lastMouseY
+
+        if(mouseX >= 0 && mouseX < MAX_CELLS_X) {
+            if(mouseY >= 0 && mouseY < MAX_CELLS_Y) {
+                ApplyMouseClick(mouseX, mouseY);
+                
+            }
+        }
+        isMousePressed = true;
+    } else {
+        isMousePressed = false;
+    }
+
+    if(generationFramesCounter >= TARGET_FPS) {
+        generationFramesCounter = 0;
+        if(isShowingUI == false) {
+            LoopCells();
+        }
+    }
+
+    for(int x = 0; x < MAX_CELLS_X; x++) {
+        for(int y = 0; y < MAX_CELLS_Y; y++) {
+            finalCells[x][y] = cells[x][y];
+        }
+    }
+
+    mousePosition = GetMousePosition();
+
+    UpdateMyCamera();
+    
+    
+    BeginDrawing();
+    
+    ClearBackground(GRAY);
+    
+
+    BeginMode2D(camera);
+    DrawRectangle(-20,-20, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) + 40, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) + 40, BLACK);
+    
+    for(int x = 0; x < MAX_CELLS_X; x++) {
+        for(int y = 0; y < MAX_CELLS_Y; y++) {
+            DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
+            testSize += CELL_SIZE;
+        }
+    }
+
+    if(isShowingUI == false) {
+        mouseToWorldPosition = GetScreenToWorld2D(GetMousePosition(), camera);
+        DrawRectangle(mouseToWorldPosition.x, mouseToWorldPosition.y, 5, 5, BLACK);
+    }
+    
+    EndMode2D();
+
+    HandleUI();
+
+    if (fileDialogState.fileDialogActive) GuiLock();
+    GuiUnlock();
+
+    GuiFileDialog(&fileDialogState);
+
+    EndDrawing();
+}
+
+void DoCellChange(int cellX, int cellY) {
+    cells[cellX][cellY] = selectedCellType;
+    finalCells[cellX][cellY] = cells[cellX][cellY];
+
+    for(int neighbourX = cellX - brushSize; neighbourX <= cellX + brushSize; neighbourX++) {
+        for(int neighbourY = cellY - brushSize; neighbourY <= cellY + brushSize; neighbourY++) {
+            if(neighbourX >= 0 && neighbourX < MAX_CELLS_X && neighbourY >= 0 && neighbourY < MAX_CELLS_Y) {
+                if((neighbourX != cellX || neighbourY != cellY)) {
+                    cells[neighbourX][neighbourY] = selectedCellType;
+                    finalCells[neighbourX][neighbourY] = cells[neighbourX][neighbourY];
+                }
+            }
+        }
+    }
+}
+
+void ApplyMouseClick(int mouseX, int mouseY) {
+    if(isMousePressed == false) {
+        DoCellChange(mouseX, mouseY);
+    } else {
+        if(lastMouseX == mouseX && lastMouseY == mouseY) {
+            cells[mouseX][mouseY] = selectedCellType;
+            finalCells[mouseX][lastMouseY] = cells[mouseX][mouseY];
+        }
+        int xDiff = lastMouseX - mouseX;
+        int yDiff = lastMouseY - mouseY;
+
+        bool xDiffIsLarger = (xDiff < 0 ? -xDiff : xDiff) > (yDiff < 0 ? -yDiff : yDiff);
+        int xModifier = xDiff < 0 ? 1 : -1;
+        int yModifier = yDiff < 0 ? 1 : -1;
+
+        bool xDiffSmaller = (xDiff < 0 ? -xDiff : xDiff) < (yDiff < 0 ? -yDiff : yDiff);
+        int upperBound = xDiffSmaller ? (yDiff < 0 ? -yDiff : yDiff) : (xDiff < 0 ? -xDiff : xDiff);
+        int min = xDiffSmaller ? (xDiff < 0 ? -xDiff : xDiff) : (yDiff < 0 ? -yDiff : yDiff);
+        float slope = ( min == 0 || upperBound == 0) ? 0 : ((float) (min + 1) / (upperBound + 1));
+
+        int smallerCount;
+        for(int i = 1; i <= upperBound; i++) {
+            smallerCount = (int) floor(i * slope);
+            int yIncrease, xIncrease;
+            if(xDiffIsLarger) {
+                xIncrease = i;
+                yIncrease = smallerCount;
+            } else {
+                yIncrease = i;
+                xIncrease = smallerCount;
+            }
+
+            int currentX = lastMouseX + (xIncrease * xModifier);
+            int currentY = lastMouseY + (yIncrease * yModifier);
+
+            if(currentX >= 0 && currentX < MAX_CELLS_X) {
+                if(currentY >= 0 && currentY < MAX_CELLS_Y) {
+                    DoCellChange(currentX, currentY);
+                }
+            }
+        }
+        
+
+        
+    }
+
+    lastMouseX = mouseX;
+    lastMouseY = mouseY;
 }
 
 void UpdateMyCamera() {

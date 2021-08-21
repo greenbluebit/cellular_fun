@@ -2,8 +2,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "raylib.h"
 #include "utils.h"
+
+#if defined(PLATFORM_WEB)
+    #include <emscripten/emscripten.h>
+#endif
 
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_SUPPORT_ICONS
@@ -26,6 +31,7 @@ struct CellType {
     Color color;
     char name[MAX_NAME_LENGTH + 1];
     struct TargetCellRelationship *targetCellRelationship[MAX_RELATIONSHIPS];
+    int lookDistance;
 } T_CellType;
 
 // relationshipType
@@ -45,6 +51,14 @@ struct TargetCellRelationship {
     int toAmount;
     int index;
     int resultCellTypeIndex;
+    int bottomLeft;
+    int bottom;
+    int bottomRight;
+    int right;
+    int topRight;
+    int top;
+    int topLeft;
+    int left;
     //struct CellType *resultCellType;
 } T_TargetCellRelationship;
 
