@@ -589,23 +589,25 @@ void Loop() {
     
 
     BeginMode2D(camera);
-    DrawRectangle(-10,-10, ((CELL_SIZE + CELL_SEPARATION) * (selfActualizing ? MAX_CELLS_X : PHYSICS_MAX_CELLS_X)) + 20, ((CELL_SIZE + CELL_SEPARATION) * (selfActualizing ? MAX_CELLS_Y : PHYSICS_MAX_CELLS_Y)) + 20, BLACK);
+    //DrawRectangle(-10,-10, ((CELL_SIZE + CELL_SEPARATION) * (selfActualizing ? MAX_CELLS_X : PHYSICS_MAX_CELLS_X)) + 20, ((CELL_SIZE + CELL_SEPARATION) * (selfActualizing ? MAX_CELLS_Y : PHYSICS_MAX_CELLS_Y)) + 20, BLACK);
+    DrawRectangle(-10,-10, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) + 20, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) + 20, BLACK);
     
-    if(selfActualizing == true) {
-        for(int x = 0; x < MAX_CELLS_X; x++) {
-            for(int y = 0; y < MAX_CELLS_Y; y++) {
-                DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
-                testSize += CELL_SIZE;
-            }
-        }
-    } else {
-        for(int x = 0; x < PHYSICS_MAX_CELLS_X; x++) {
-            for(int y = 0; y < PHYSICS_MAX_CELLS_Y; y++) {
-                DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
-                testSize += CELL_SIZE;
-            }
+    for(int x = 0; x < MAX_CELLS_X; x++) {
+        for(int y = 0; y < MAX_CELLS_Y; y++) {
+            DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
+            testSize += CELL_SIZE;
         }
     }
+    // if(selfActualizing == true) {
+        
+    // } else {
+    //     // for(int x = 0; x < PHYSICS_MAX_CELLS_X; x++) {
+    //     //     for(int y = 0; y < PHYSICS_MAX_CELLS_Y; y++) {
+    //     //         DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
+    //     //         testSize += CELL_SIZE;
+    //     //     }
+    //     // }
+    // }
     
 
     if(isShowingUI == false) {

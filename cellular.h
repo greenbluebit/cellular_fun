@@ -2,11 +2,11 @@
 #include <string.h>
 #include "vector.h"
 
-#define MAX_CELLS_X             100
-#define MAX_CELLS_Y             100
+#define MAX_CELLS_X             210
+#define MAX_CELLS_Y             110
 
-#define PHYSICS_MAX_CELLS_X     100
-#define PHYSICS_MAX_CELLS_Y     100
+// #define PHYSICS_MAX_CELLS_X     210
+//#define PHYSICS_MAX_CELLS_Y     110
 
 #define MAX_CELLTYPES           10
 #define MAX_RELATIONSHIP_TYPES  8
@@ -19,8 +19,8 @@ const char *relationshipTypes[MAX_RELATIONSHIP_TYPES] =
 int cells[MAX_CELLS_X] [MAX_CELLS_Y] = { 0 };
 int finalCells [MAX_CELLS_X] [MAX_CELLS_Y] = { 0 };
 
-int physicsCells[MAX_CELLS_X] [MAX_CELLS_Y] = { 0 };
-int physicsFinalCells [MAX_CELLS_X] [MAX_CELLS_Y] = { 0 };
+//int physicsCells[MAX_CELLS_X] [MAX_CELLS_Y] = { 0 };
+//int physicsFinalCells [MAX_CELLS_X] [MAX_CELLS_Y] = { 0 };
 
 int defaultCell = 0;
 
@@ -287,7 +287,7 @@ void LoopCells() {
         }
     }
     if(selfActualizing == false && changes.pfVectorTotal(&changes) > 0) {
-        changes.pfVectorSort(&changes);
+        //changes.pfVectorSort(&changes);
 
         int iPrev = 0;
         struct FromTo *fromo;
