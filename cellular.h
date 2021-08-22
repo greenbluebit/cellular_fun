@@ -2,8 +2,8 @@
 #include <string.h>
 #include "vector.h"
 
-#define MAX_CELLS_X             500
-#define MAX_CELLS_Y             500
+#define MAX_CELLS_X             100
+#define MAX_CELLS_Y             100
 
 #define PHYSICS_MAX_CELLS_X     100
 #define PHYSICS_MAX_CELLS_Y     100

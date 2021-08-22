@@ -589,7 +589,7 @@ void Loop() {
     
 
     BeginMode2D(camera);
-    DrawRectangle(-20,-20, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) + 20, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) + 20, BLACK);
+    DrawRectangle(-10,-10, ((CELL_SIZE + CELL_SEPARATION) * (selfActualizing ? MAX_CELLS_X : PHYSICS_MAX_CELLS_X)) + 20, ((CELL_SIZE + CELL_SEPARATION) * (selfActualizing ? MAX_CELLS_Y : PHYSICS_MAX_CELLS_Y)) + 20, BLACK);
     
     if(selfActualizing == true) {
         for(int x = 0; x < MAX_CELLS_X; x++) {
@@ -785,6 +785,7 @@ void HandleUI() {
                 selectedNeighbourType = 0;
                 letterCount = 0;
                 isDefault = 0;
+                isImmovable = 0;
                 for(int i = 0; i < MAX_NAME_LENGTH; i++) {
                     cellName[i] = '\0';
                 }

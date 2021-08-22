@@ -62,6 +62,7 @@ char cellName[MAX_NAME_LENGTH + 1] = "\0";
 int letterCount = 0;
 bool textBoxSelected = false;
 bool isDefault = false;
+bool isImmovable = false;
 
 int generationSpeedMultiplier = 0;
 const char *generationSpeedMultiplierNames[MAX_GENERATION_SPEED_MULTIPLIER + 1] = {"Stop", "Slowest", "Slow", "Fast", "Fastest"};
@@ -109,11 +110,13 @@ void HandleRunningMenuUI() {
                 selectedColor = cellTypes[selectedIndex].color;
                 selectedNeighbourType = cellTypes[selectedIndex].neighbourType;
                 letterCount = 0;
+                isImmovable = cellTypes[selectedIndex].immovable;
                 if(defaultCell == selectedIndex) {
                     isDefault = true;
                 } else {
                     isDefault = false;
                 }
+                isImmovable = cellTypes[selectedIndex].immovable;
                 for(int x = 0; x < MAX_NAME_LENGTH; x++) {
                     if(cellTypes[selectedIndex].name[x] != '\0') {
                         letterCount++;
@@ -326,9 +329,17 @@ void HandleEditCellUI() {
     //     }
     // }
 
-    DrawText("Relationships:", dialogHolderPosX + 20, dialogHolderPosY + 75, 8, BLACK);
+    isDefault = GuiCheckBox((Rectangle) {dialogHolderPosX + 20, dialogHolderPosY + 75, 20, 20}, "Is Default", isDefault);
+    if(isDefault) {
+        defaultCell = selectedIndex;
+    }
 
-    if(GuiButton((Rectangle) {dialogHolderPosX + 20, dialogHolderPosY + 90, 100, 20}, "Add Relationship")) {
+    isImmovable = GuiCheckBox((Rectangle) {dialogHolderPosX + 20, dialogHolderPosY + 105, 20, 20}, "Is Immovable", isImmovable);
+    
+
+    DrawText("Relationships:", dialogHolderPosX + 20, dialogHolderPosY + 135, 8, BLACK);
+
+    if(GuiButton((Rectangle) {dialogHolderPosX + 20, dialogHolderPosY + 150, 100, 20}, "Add Relationship")) {
         for(int i = 0; i < MAX_RELATIONSHIPS; i++) {
             if(newTargetRelationShips[i].index == -1) {
                 newTargetRelationShips[i].index = i;
@@ -343,10 +354,7 @@ void HandleEditCellUI() {
         }
     }
 
-    isDefault = GuiCheckBox((Rectangle) {dialogHolderPosX + 20, dialogHolderPosY + 120, 20, 20}, "Is Default", isDefault);
-    if(isDefault) {
-        defaultCell = selectedIndex;
-    }
+    
 
     int cellColorPickerSize = 100;
         
@@ -580,6 +588,7 @@ void HandleEditCellUI() {
         cellTypes[selectedIndex].index = selectedIndex;
         strcpy(cellTypes[selectedIndex].name, cellName);
         cellTypes[selectedIndex].neighbourType = selectedNeighbourType;
+        cellTypes[selectedIndex].immovable = isImmovable;
         
         for(int x = 0; x < MAX_RELATIONSHIPS; x++) {
             cellTypes[selectedIndex].targetCellRelationship[x] = malloc(sizeof(T_TargetCellRelationship));
@@ -611,6 +620,7 @@ void HandleEditCellUI() {
             cellTypes[selectedIndex].index = -1;
             strcpy(cellTypes[selectedIndex].name, "UNSET");
             cellTypes[selectedIndex].neighbourType = 0;
+            isImmovable = false;
             
             for(int x = 0; x < MAX_RELATIONSHIPS; x++) {
                 free(cellTypes[selectedIndex].targetCellRelationship[x]);
