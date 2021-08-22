@@ -41,8 +41,8 @@ int selectedIndex = -1;
 struct TargetCellRelationship newTargetRelationShips[MAX_RELATIONSHIPS];
 
 int neighbourType = 0;
-const char *neighbours[MAX_NEIGHBOUR_TYPES] = 
-{ "Moore", "Von Neumann", "Vertical", "Horizontal"};
+// const char *neighbours[MAX_NEIGHBOUR_TYPES] = 
+// { "Moore", "Von Neumann", "Vertical", "Horizontal"};
 int selectedNeighbourType = 0;
 
 Rectangle panelRec = { 0.5 * SCREEN_WIDTH - (DIALOG_VIEW_PERCENT * SCREEN_WIDTH) / 2, 0.6 * SCREEN_HEIGHT - (DIALOG_VIEW_PERCENT * SCREEN_HEIGHT) / 2, (DIALOG_VIEW_PERCENT * SCREEN_WIDTH), (DIALOG_VIEW_PERCENT * SCREEN_HEIGHT) };
@@ -62,7 +62,6 @@ char cellName[MAX_NAME_LENGTH + 1] = "\0";
 int letterCount = 0;
 bool textBoxSelected = false;
 bool isDefault = false;
-int defaultCell = 0;
 
 int generationSpeedMultiplier = 0;
 const char *generationSpeedMultiplierNames[MAX_GENERATION_SPEED_MULTIPLIER + 1] = {"Stop", "Slowest", "Slow", "Fast", "Fastest"};
@@ -179,8 +178,10 @@ void HandleRunningMenuUI() {
             cellIndex++;
         }
     }
+
     DrawText("Cells", 0.97 * active_width, 0.1 * active_height, 10, BLACK);
 
+    selfActualizing = GuiCheckBox((Rectangle) {0.955 * active_width, 0.68 * active_height, 0.015 * active_width, 20}, "Self", selfActualizing);
     isWrapping = GuiCheckBox((Rectangle) {0.955 * active_width, 0.72 * active_height, 0.015 * active_width, 20}, "Wrap", isWrapping);
 
     if(GuiButton((Rectangle) {0.95 * active_width, 0.76 * active_height, 0.04 * active_width, 20}, "Generate")) {

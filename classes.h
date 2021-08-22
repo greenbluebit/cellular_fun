@@ -22,8 +22,17 @@
 #define MAX_RELATIONSHIPS       10
 #define MAX_NAME_LENGTH         15
 
+
+
 struct CellType;
 struct TargetCellRelationship;
+
+struct FromTo {
+    int cellX;
+    int cellY;
+    int toCellX;
+    int toCellY;
+} T_FromTo;
 
 struct CellType {
     int index;
@@ -32,6 +41,7 @@ struct CellType {
     char name[MAX_NAME_LENGTH + 1];
     struct TargetCellRelationship *targetCellRelationship[MAX_RELATIONSHIPS];
     int lookDistance;
+    int immovable;
 } T_CellType;
 
 // relationshipType

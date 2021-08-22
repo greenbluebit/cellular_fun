@@ -17,6 +17,8 @@
 		"gui_file_dialog.h": "c",
 		"typeinfo": "c",
 		"cjson.h": "c",
-		"*.m": "c"
+		"*.m": "c",
+		"logic.h": "c",
+		"cstdlib": "cpp"
 	}
 }

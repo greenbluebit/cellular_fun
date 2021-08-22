@@ -9,7 +9,7 @@
 #define FAST_MOVE_SPEED     20
 
 #define CELL_SIZE               4
-#define CELL_SEPARATION         2
+#define CELL_SEPARATION         1
 #define TARGET_FPS              60
 
 #define MAX_CAMERA_ZOOM         3.5f // zoom in
@@ -54,6 +54,14 @@ int ParseJson(char *string) {
     cJSON *jsonName = NULL;
     cJSON *jsonTargetRelationships = NULL;
     cJSON *jsonTargetRelationship = NULL;
+    cJSON *bottomLeft = NULL;
+    cJSON *bottom = NULL;
+    cJSON *bottomRight = NULL;
+    cJSON *right = NULL;
+    cJSON *topRight = NULL;
+    cJSON *top = NULL;
+    cJSON *topLeft = NULL;
+    cJSON *left = NULL;
     cJSON *jsonTargetIndex = NULL;
     cJSON *jsonRelationshipType = NULL;
     cJSON *jsonAmount = NULL;
@@ -134,7 +142,7 @@ int ParseJson(char *string) {
             jsonToAmount = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "toamount");
             jsonRelationshipIndex = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "index");
             jsonResultIndex = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "resultindex");
-
+            
             if(jsonRelationshipIndex->valueint > -1) {
                 if(cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint] == 0) {
                     cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint] = malloc(sizeof(T_TargetCellRelationship));
@@ -149,6 +157,65 @@ int ParseJson(char *string) {
                 cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->relationshipType = jsonRelationshipType->valueint;
                 cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->resultCellTypeIndex = jsonResultIndex->valueint;
                 cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->targetCellTypeIndex = jsonTargetIndex->valueint;
+
+                if(jsonNeighbourType != NULL) {
+                    if(jsonNeighbourType->valueint == 0) {
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomLeft = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottom = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomRight = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->right = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topRight = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->top = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topLeft = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->left = 1;
+                    } else if(jsonNeighbourType->valueint == 1) {
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomLeft = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottom = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomRight = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->right = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topRight = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->top = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topLeft = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->left = 1;
+                    } else if(jsonNeighbourType->valueint == 2) {
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomLeft = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottom = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomRight = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->right = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topRight = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->top = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topLeft = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->left = 0;
+                    } else if(jsonNeighbourType->valueint == 3) {
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomLeft = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottom = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomRight = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->right = 1;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topRight = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->top = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topLeft = 0;
+                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->left = 1;
+                    }
+                    
+                } else {
+                    bottomLeft = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "bottomleft");
+                    bottom = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "bottom");
+                    bottomRight = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "bottomright");
+                    right = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "right");
+                    topRight = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "topright");
+                    top = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "top");
+                    topLeft = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "topleft");
+                    left = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "left");
+
+                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomLeft = bottomLeft->valueint;
+                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottom = bottom->valueint;
+                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomRight = bottomRight->valueint;
+                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->right = right->valueint;
+                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topRight = topRight->valueint;
+                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->top = top->valueint;
+                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topLeft = topLeft->valueint;
+                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->left = left->valueint;
+                }
             }
             
         }
@@ -169,7 +236,7 @@ char *PrintJson() {
     cJSON *jsonCellTypes = NULL;
     cJSON *jsonCellType = NULL;
     cJSON *jsonIndex = NULL;
-    cJSON *jsonNeighbourType = NULL;
+    //cJSON *jsonNeighbourType = NULL;
     cJSON *jsonColor = NULL;
     cJSON *jsonR = NULL;
     cJSON *jsonG = NULL;
@@ -217,8 +284,8 @@ char *PrintJson() {
         jsonIndex = cJSON_CreateNumber(cellTypes[i].index);
         cJSON_AddItemToObject(jsonCellType, "index", jsonIndex);
 
-        jsonNeighbourType = cJSON_CreateNumber(cellTypes[i].neighbourType);
-        cJSON_AddItemToObject(jsonCellType, "neighbourtype", jsonNeighbourType);
+        //jsonNeighbourType = cJSON_CreateNumber(cellTypes[i].neighbourType);
+        //cJSON_AddItemToObject(jsonCellType, "neighbourtype", jsonNeighbourType);
 
         jsonColor = cJSON_CreateObject();
         cJSON_AddItemToObject(jsonCellType, "color", jsonColor);
@@ -264,16 +331,42 @@ char *PrintJson() {
                 jsonResultIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->resultCellTypeIndex);
                 cJSON_AddItemToObject(jsonTargetRelationship, "resultindex", jsonResultIndex);
 
-                if(jsonNeighbourType == NULL) {
-                    cJSON *bottomLeft = NULL;
-                    cJSON *bottom = NULL;
-                    cJSON *bottomRight = NULL;
-                    cJSON *right = NULL;
-                    cJSON *topRight = NULL;
-                    cJSON *top = NULL;
-                    cJSON *topLeft = NULL;
-                    cJSON *left = NULL;
-                }
+                bottomLeft = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->bottomLeft);
+                cJSON_AddItemToObject(jsonTargetRelationship, "bottomleft", bottomLeft);
+
+                bottom = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->bottom);
+                cJSON_AddItemToObject(jsonTargetRelationship, "bottom", bottom);
+
+                bottomRight = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->bottomRight);
+                cJSON_AddItemToObject(jsonTargetRelationship, "bottomright", bottomRight);
+
+                right = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->right);
+                cJSON_AddItemToObject(jsonTargetRelationship, "right", right);
+
+                topRight = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->topRight);
+                cJSON_AddItemToObject(jsonTargetRelationship, "topright", topRight);
+
+                top = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->top);
+                cJSON_AddItemToObject(jsonTargetRelationship, "top", top);
+
+                topLeft = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->topLeft);
+                cJSON_AddItemToObject(jsonTargetRelationship, "topleft", topLeft);
+
+                left = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->left);
+                cJSON_AddItemToObject(jsonTargetRelationship, "left", left);
+
+                // if(jsonNeighbourType == NULL) {
+                //     cJSON *bottomLeft = NULL;
+                //     cJSON *bottom = NULL;
+                //     cJSON *bottomRight = NULL;
+                //     cJSON *right = NULL;
+                //     cJSON *topRight = NULL;
+                //     cJSON *top = NULL;
+                //     cJSON *topLeft = NULL;
+                //     cJSON *left = NULL;
+                // } else {
+
+                // }
             }
         }
     }
@@ -496,14 +589,24 @@ void Loop() {
     
 
     BeginMode2D(camera);
-    DrawRectangle(-20,-20, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) + 40, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) + 40, BLACK);
+    DrawRectangle(-20,-20, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) + 20, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) + 20, BLACK);
     
-    for(int x = 0; x < MAX_CELLS_X; x++) {
-        for(int y = 0; y < MAX_CELLS_Y; y++) {
-            DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
-            testSize += CELL_SIZE;
+    if(selfActualizing == true) {
+        for(int x = 0; x < MAX_CELLS_X; x++) {
+            for(int y = 0; y < MAX_CELLS_Y; y++) {
+                DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
+                testSize += CELL_SIZE;
+            }
+        }
+    } else {
+        for(int x = 0; x < PHYSICS_MAX_CELLS_X; x++) {
+            for(int y = 0; y < PHYSICS_MAX_CELLS_Y; y++) {
+                DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
+                testSize += CELL_SIZE;
+            }
         }
     }
+    
 
     if(isShowingUI == false) {
         mouseToWorldPosition = GetScreenToWorld2D(GetMousePosition(), camera);
