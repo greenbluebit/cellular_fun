@@ -1,4 +1,4 @@
-#define VECTOR_INIT_CAPACITY 6
+#define VECTOR_INIT_CAPACITY 500 * 500
 #define UNDEFINE  -1
 #define SUCCESS 0
 
@@ -153,15 +153,16 @@ int vectorFree(vector *v)
     int  status = UNDEFINE;
     if(v)
     {
-        for (int i = 0; (i < v->vectorList.total - 1); i++)
-        {
-            if(v->vectorList.items[i] != 0) {
-                free(v->vectorList.items[i]);
-            }
+        //v->vectorList.total = 0;
+        // for (int i = 0; (i < v->vectorList.total - 1); i++)
+        // {
+        //     if(v->vectorList.items[i] != 0) {
+        //         free(v->vectorList.items[i]);
+        //     }
             
-        }
-        free(v->vectorList.items);
-        v->vectorList.items = NULL;
+        // }
+        //free(v->vectorList.items);
+        //v->vectorList.items = NULL;
         status = SUCCESS;
     }
     return status;
@@ -179,6 +180,11 @@ void vector_init(vector *v)
 
 
     v->vectorList.capacity = vectorCapacity;
-    v->vectorList.total = 0;
+    v->vectorList.total = vectorCapacity;
     v->vectorList.items = malloc(sizeof(struct FromTo *) * v->vectorList.capacity);
+    for (int i = 0; i < v->vectorList.total; i++)
+    {
+        v->vectorList.items[i] = malloc(sizeof(struct FromTo));
+        
+    }
 }
