@@ -2,9 +2,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+//#include <string.h> // I included this to check if strings contain specific substrings, so far however this is not used, I might want to remove it later.
 #include <math.h>
 #include "raylib.h"
 #include "utils.h"
+#include <time.h>
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -32,6 +34,7 @@ struct FromTo {
     int cellY;
     int toCellX;
     int toCellY;
+    int resultId;
 } T_FromTo;
 
 struct CellType {
@@ -44,7 +47,7 @@ struct CellType {
     int immovable;
 } T_CellType;
 
-// relationshipType
+// comparisonType
 // equal
 // notequal
 // less
@@ -55,12 +58,14 @@ struct CellType {
 // between
 struct TargetCellRelationship {
     //struct CellType *targetCellType;
-    int targetCellTypeIndex;
     int relationshipType;
+    int targetCellTypeIndex;
+    int comparisonType;
     int amount;
     int toAmount;
     int index;
     int resultCellTypeIndex;
+    int chance;
     int bottomLeft;
     int bottom;
     int bottomRight;

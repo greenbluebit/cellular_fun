@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ui.h"
-#include "cJSON/cJSON.h"
-#include "cJSON/cJSON.c"
+#include "json.h"
 
 
 #define MOVE_SPEED          10
@@ -12,8 +11,8 @@
 #define CELL_SEPARATION         1
 #define TARGET_FPS              60
 
-#define MAX_CAMERA_ZOOM         3.5f // zoom in
-#define MIN_CAMERA_ZOOM         0.9f // zoom out
+#define MAX_CAMERA_ZOOM         4.5f // zoom in
+#define MIN_CAMERA_ZOOM         1.1f // zoom out
 
 
 GuiFileDialogState fileDialogState;
@@ -38,375 +37,7 @@ void HandleUI();
 void Loop();
 void ApplyMouseClick(int mouseX, int mouseY);
 
-int ParseJson(char *string) {
-    int status = 0;
-    cJSON *parent = cJSON_Parse(string);
-    cJSON *jsonDefaultCell = NULL;
-    cJSON *jsonCellTypes = NULL;
-    cJSON *jsonCellType = NULL;
-    cJSON *jsonIndex = NULL;
-    cJSON *jsonNeighbourType = NULL;
-    cJSON *jsonColor = NULL;
-    cJSON *jsonR = NULL;
-    cJSON *jsonG = NULL;
-    cJSON *jsonB = NULL;
-    cJSON *jsonA = NULL;
-    cJSON *jsonName = NULL;
-    cJSON *jsonTargetRelationships = NULL;
-    cJSON *jsonTargetRelationship = NULL;
-    cJSON *bottomLeft = NULL;
-    cJSON *bottom = NULL;
-    cJSON *bottomRight = NULL;
-    cJSON *right = NULL;
-    cJSON *topRight = NULL;
-    cJSON *top = NULL;
-    cJSON *topLeft = NULL;
-    cJSON *left = NULL;
-    cJSON *jsonTargetIndex = NULL;
-    cJSON *jsonRelationshipType = NULL;
-    cJSON *jsonAmount = NULL;
-    cJSON *jsonToAmount = NULL;
-    cJSON *jsonRelationshipIndex = NULL;
-    cJSON *jsonResultIndex = NULL;
 
-    if(parent == NULL) {
-        const char *error_ptr = cJSON_GetErrorPtr();
-        if (error_ptr != NULL)
-        {
-            fprintf(stderr, "Error before: %s\n", error_ptr);
-        }
-        status = 1;
-        goto end;
-    }
-
-    
-    jsonDefaultCell = cJSON_GetObjectItemCaseSensitive(parent, "defaultcell");
-    if(jsonDefaultCell != NULL) {
-        defaultCell = jsonDefaultCell->valueint;
-        selectedCellType = defaultCell;
-        for(int x = 0; x < MAX_CELLS_X; x++) {
-            for(int y = 0; y < MAX_CELLS_Y; y++) {
-                finalCells[x][y] = defaultCell;
-                cells[x][y] = defaultCell;
-            }
-        }
-    }
-    
-
-    for(int i = 0; i < MAX_CELLTYPES; i++) {
-        cellTypes[i].index = -1;
-        for(int x = 0; x < MAX_RELATIONSHIPS; x++) {
-            cellTypes[i].targetCellRelationship[x] = NULL;
-        }
-    }
-
-    jsonCellTypes = cJSON_GetObjectItemCaseSensitive(parent, "celltypes");
-    // MAYBE
-    // TEDO I need to change it so that instead of having relationship array or cellType array uninitiated, to have them all with no indexes
-    //int cellTypeIndex = 0;
-    cJSON_ArrayForEach(jsonCellType, jsonCellTypes) {
-        jsonIndex = cJSON_GetObjectItemCaseSensitive(jsonCellType, "index");
-        jsonNeighbourType = cJSON_GetObjectItemCaseSensitive(jsonCellType, "neighbourtype");
-        jsonColor = cJSON_GetObjectItemCaseSensitive(jsonCellType, "color");
-
-        if(jsonColor == NULL) {
-            const char *error_ptr = cJSON_GetErrorPtr();
-            if (error_ptr != NULL)
-            {
-                fprintf(stderr, "Error before: %s\n", error_ptr);
-            }
-            status = 2;
-            goto end;
-        }
-
-        jsonR = cJSON_GetObjectItemCaseSensitive(jsonColor, "r");
-        jsonG = cJSON_GetObjectItemCaseSensitive(jsonColor, "g");
-        jsonB = cJSON_GetObjectItemCaseSensitive(jsonColor, "b");
-        jsonA = cJSON_GetObjectItemCaseSensitive(jsonColor, "a");
-
-        jsonName = cJSON_GetObjectItemCaseSensitive(jsonCellType, "name");
-
-        cellTypes[jsonIndex->valueint].index = jsonIndex->valueint;
-        cellTypes[jsonIndex->valueint].color = CLITERAL(Color){ jsonR->valueint, jsonG->valueint, jsonB->valueint, jsonA->valueint };
-        
-        strcpy(cellTypes[jsonIndex->valueint].name, jsonName->valuestring);
-
-
-
-        jsonTargetRelationships = cJSON_GetObjectItemCaseSensitive(jsonCellType, "targetcellrelationships");
-
-        cJSON_ArrayForEach(jsonTargetRelationship, jsonTargetRelationships) {
-            jsonTargetIndex = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "targetindex");
-            jsonRelationshipType = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "relationshiptype");
-            jsonAmount = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "amount");
-            jsonToAmount = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "toamount");
-            jsonRelationshipIndex = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "index");
-            jsonResultIndex = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "resultindex");
-            
-            if(jsonRelationshipIndex->valueint > -1) {
-                if(cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint] == 0) {
-                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint] = malloc(sizeof(T_TargetCellRelationship));
-                }
-                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->amount = jsonAmount->valueint;
-                if(jsonToAmount != NULL) {
-                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->toAmount = jsonToAmount->valueint;
-                } else {
-                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->toAmount = 0;
-                }
-                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->index = jsonIndex->valueint;
-                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->relationshipType = jsonRelationshipType->valueint;
-                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->resultCellTypeIndex = jsonResultIndex->valueint;
-                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->targetCellTypeIndex = jsonTargetIndex->valueint;
-
-                if(jsonNeighbourType != NULL) {
-                    if(jsonNeighbourType->valueint == 0) {
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomLeft = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottom = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomRight = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->right = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topRight = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->top = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topLeft = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->left = 1;
-                    } else if(jsonNeighbourType->valueint == 1) {
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomLeft = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottom = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomRight = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->right = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topRight = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->top = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topLeft = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->left = 1;
-                    } else if(jsonNeighbourType->valueint == 2) {
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomLeft = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottom = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomRight = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->right = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topRight = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->top = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topLeft = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->left = 0;
-                    } else if(jsonNeighbourType->valueint == 3) {
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomLeft = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottom = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomRight = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->right = 1;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topRight = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->top = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topLeft = 0;
-                        cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->left = 1;
-                    }
-                    
-                } else {
-                    bottomLeft = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "bottomleft");
-                    bottom = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "bottom");
-                    bottomRight = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "bottomright");
-                    right = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "right");
-                    topRight = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "topright");
-                    top = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "top");
-                    topLeft = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "topleft");
-                    left = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "left");
-
-                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomLeft = bottomLeft->valueint;
-                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottom = bottom->valueint;
-                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomRight = bottomRight->valueint;
-                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->right = right->valueint;
-                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topRight = topRight->valueint;
-                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->top = top->valueint;
-                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->topLeft = topLeft->valueint;
-                    cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->left = left->valueint;
-                }
-            }
-            
-        }
-
-
-        //cellTypeIndex++;
-    }
-
-    end:
-        cJSON_Delete(parent);
-        return status;
-}
-
-char *PrintJson() {
-    // TEDO I can reuse variables in next version
-    char *string = NULL;
-    cJSON *jsonDefaultCell = NULL;
-    cJSON *jsonCellTypes = NULL;
-    cJSON *jsonCellType = NULL;
-    cJSON *jsonIndex = NULL;
-    //cJSON *jsonNeighbourType = NULL;
-    cJSON *jsonColor = NULL;
-    cJSON *jsonR = NULL;
-    cJSON *jsonG = NULL;
-    cJSON *jsonB = NULL;
-    cJSON *jsonA = NULL;
-    cJSON *jsonName = NULL;
-    cJSON *jsonTargetRelationships = NULL;
-    cJSON *bottomLeft = NULL;
-    cJSON *bottom = NULL;
-    cJSON *bottomRight = NULL;
-    cJSON *right = NULL;
-    cJSON *topRight = NULL;
-    cJSON *top = NULL;
-    cJSON *topLeft = NULL;
-    cJSON *left = NULL;
-    cJSON *jsonTargetIndex = NULL;
-    cJSON *jsonRelationshipType = NULL;
-    cJSON *jsonAmount = NULL;
-    cJSON *jsonToAmount = NULL;
-    cJSON *jsonRelationshipIndex = NULL;
-    cJSON *jsonResultIndex = NULL;
-    cJSON *jsonCells = NULL;
-    // cJSON *jsonCell = NULL;
-    // cJSON *jsonCellIndex = NULL;
-    // cJSON *jsonCellTypeIndex = NULL;
-
-    cJSON *parent = cJSON_CreateObject();
-    if(parent == NULL) {
-        goto end;
-    }
-
-    jsonDefaultCell = cJSON_CreateNumber(defaultCell);
-    cJSON_AddItemToObject(parent, "defaultcell",jsonDefaultCell);
-
-    jsonCellTypes = cJSON_CreateArray();
-    cJSON_AddItemToObject(parent, "celltypes", jsonCellTypes);
-
-    for(int i = 0; i < MAX_CELLTYPES; i++) {
-        jsonCellType = cJSON_CreateObject();
-        if(jsonCellType == NULL) { // TEDO I Need to do this check at the rest of the json initializers
-            goto end;
-        }
-        cJSON_AddItemToArray(jsonCellTypes, jsonCellType);
-
-        jsonIndex = cJSON_CreateNumber(cellTypes[i].index);
-        cJSON_AddItemToObject(jsonCellType, "index", jsonIndex);
-
-        //jsonNeighbourType = cJSON_CreateNumber(cellTypes[i].neighbourType);
-        //cJSON_AddItemToObject(jsonCellType, "neighbourtype", jsonNeighbourType);
-
-        jsonColor = cJSON_CreateObject();
-        cJSON_AddItemToObject(jsonCellType, "color", jsonColor);
-
-        jsonR = cJSON_CreateNumber(cellTypes[i].color.r);
-        cJSON_AddItemToObject(jsonColor, "r", jsonR);
-
-        jsonG = cJSON_CreateNumber(cellTypes[i].color.g);
-        cJSON_AddItemToObject(jsonColor, "g", jsonG);
-
-        jsonB = cJSON_CreateNumber(cellTypes[i].color.b);
-        cJSON_AddItemToObject(jsonColor, "b", jsonB);
-
-        jsonA = cJSON_CreateNumber(cellTypes[i].color.a);
-        cJSON_AddItemToObject(jsonColor, "a", jsonA);
-
-        jsonName = cJSON_CreateString(cellTypes[i].name);
-        cJSON_AddItemToObject(jsonCellType, "name", jsonName);
-
-        jsonTargetRelationships = cJSON_CreateArray();
-        cJSON_AddItemToObject(jsonCellType, "targetcellrelationships", jsonTargetRelationships);
-
-        for(int x = 0; x < MAX_RELATIONSHIPS; x++) {
-            if(cellTypes[i].targetCellRelationship[x] != 0) {
-                cJSON *jsonTargetRelationship = cJSON_CreateObject();
-                cJSON_AddItemToArray(jsonTargetRelationships, jsonTargetRelationship);
-
-                jsonTargetIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->targetCellTypeIndex);
-                cJSON_AddItemToObject(jsonTargetRelationship, "targetindex", jsonTargetIndex);
-
-                jsonRelationshipType = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->relationshipType);
-                cJSON_AddItemToObject(jsonTargetRelationship, "relationshiptype", jsonRelationshipType);
-
-                jsonAmount = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->amount);
-                cJSON_AddItemToObject(jsonTargetRelationship, "amount", jsonAmount);
-
-                jsonToAmount = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->toAmount);
-                cJSON_AddItemToObject(jsonTargetRelationship, "toamount", jsonToAmount);
-
-                jsonRelationshipIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->index);
-                cJSON_AddItemToObject(jsonTargetRelationship, "index", jsonRelationshipIndex);
-
-                jsonResultIndex = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->resultCellTypeIndex);
-                cJSON_AddItemToObject(jsonTargetRelationship, "resultindex", jsonResultIndex);
-
-                bottomLeft = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->bottomLeft);
-                cJSON_AddItemToObject(jsonTargetRelationship, "bottomleft", bottomLeft);
-
-                bottom = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->bottom);
-                cJSON_AddItemToObject(jsonTargetRelationship, "bottom", bottom);
-
-                bottomRight = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->bottomRight);
-                cJSON_AddItemToObject(jsonTargetRelationship, "bottomright", bottomRight);
-
-                right = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->right);
-                cJSON_AddItemToObject(jsonTargetRelationship, "right", right);
-
-                topRight = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->topRight);
-                cJSON_AddItemToObject(jsonTargetRelationship, "topright", topRight);
-
-                top = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->top);
-                cJSON_AddItemToObject(jsonTargetRelationship, "top", top);
-
-                topLeft = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->topLeft);
-                cJSON_AddItemToObject(jsonTargetRelationship, "topleft", topLeft);
-
-                left = cJSON_CreateNumber(cellTypes[i].targetCellRelationship[x]->left);
-                cJSON_AddItemToObject(jsonTargetRelationship, "left", left);
-
-                // if(jsonNeighbourType == NULL) {
-                //     cJSON *bottomLeft = NULL;
-                //     cJSON *bottom = NULL;
-                //     cJSON *bottomRight = NULL;
-                //     cJSON *right = NULL;
-                //     cJSON *topRight = NULL;
-                //     cJSON *top = NULL;
-                //     cJSON *topLeft = NULL;
-                //     cJSON *left = NULL;
-                // } else {
-
-                // }
-            }
-        }
-    }
-
-    // TEDO Make Cells saving as a boolean
-    //jsonCells = cJSON_CreateArray();
-    //cJSON_AddItemToObject(parent, "cells", jsonCells);
-
-    // int usedIndex = 0;
-
-    // for(int x = 0; x < MAX_CELLS_X; x++) {
-    //     for(int y = 0; y < MAX_CELLS_Y; y++) {
-    //         jsonCell = cJSON_CreateObject();
-    //         if(jsonCell == NULL) { // TEDO I Need to do this check at the rest of the json initializers
-    //             goto end;
-    //         }
-    //         cJSON_AddItemToArray(jsonCells, jsonCell);
-
-    //         jsonCellIndex = cJSON_CreateNumber(usedIndex);
-    //         cJSON_AddItemToObject(jsonCell, "cellindex", jsonCellIndex);
-            
-    //         jsonCellTypeIndex = cJSON_CreateNumber(cells[x][y]);
-    //         cJSON_AddItemToObject(jsonCell, "celltypeindex", jsonCellTypeIndex);
-
-    //         usedIndex++;
-
-    //         SetWindowTitle(TextFormat("%i", usedIndex));
-
-    //     }
-    // }
-
-    string = cJSON_Print(parent);
-    if(string == NULL) {
-        fprintf(stderr, "Failed to print. \n");
-    }
-
-    end:
-        cJSON_Delete(parent);
-        return string;
-}
 
 void Setup() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
@@ -415,12 +46,13 @@ void Setup() {
     fileDialogState = InitGuiFileDialog(active_width / 2, active_height / 2, GetWorkingDirectory(), false);
     char fileNameToLoad[512] = { 0 };
     
-    font = LoadFont("resources/fonts/setback.png");
+    font = LoadFont("resources/fonts/setback.png"); // TEDO Not using this at all
+
     camera.target = (Vector2) { (active_width / 2) , (active_height / 2)};
     camera.offset = camera.target;
+    camera.target = (Vector2) {((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) / 2, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) / 2};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
-
 
     SetupCells(); 
 
@@ -458,6 +90,7 @@ void Loop() {
     }
     if(IsKeyPressed(KEY_ESCAPE)) {
         isShowingUI = !isShowingUI;
+        isCinematic = false;
         // Hiding other UI elements
         if(isShowingUI == false) {
             isShowingCreateCellTypeDialog = false;
@@ -471,12 +104,67 @@ void Loop() {
         }
     }
 
-    if (IsKeyPressed(KEY_ENTER) && (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)))
-    {
-        // see what display we are on right now
-        
+    if(IsKeyPressed(KEY_C)) {
+        if(isShowingUI == false) {
+            isCinematic = !isCinematic;
+        }
+    }
 
-        
+    if(IsKeyPressed(KEY_ONE)) {
+        if(cellTypes[0].index != -1 ) {
+            selectedCellType = cellTypes[0].index;
+        }
+    }
+    if(IsKeyPressed(KEY_TWO)) {
+        if(cellTypes[1].index != -1 ) {
+            selectedCellType = cellTypes[1].index;
+        }
+    }
+    if(IsKeyPressed(KEY_THREE)) {
+        if(cellTypes[2].index != -1 ) {
+            selectedCellType = cellTypes[2].index;
+        }
+    }
+    if(IsKeyPressed(KEY_FOUR)) {
+        if(cellTypes[3].index != -1 ) {
+            selectedCellType = cellTypes[3].index;
+        }
+    }
+    if(IsKeyPressed(KEY_FIVE)) {
+        if(cellTypes[4].index != -1 ) {
+            selectedCellType = cellTypes[4].index;
+        }
+    }
+    if(IsKeyPressed(KEY_SIX)) {
+        if(cellTypes[5].index != -1 ) {
+            selectedCellType = cellTypes[5].index;
+        }
+    }
+    if(IsKeyPressed(KEY_SEVEN)) {
+        if(cellTypes[6].index != -1 ) {
+            selectedCellType = cellTypes[6].index;
+        }
+    }
+    if(IsKeyPressed(KEY_EIGHT)) {
+        if(cellTypes[7].index != -1 ) {
+            selectedCellType = cellTypes[7].index;
+        }
+    }
+    if(IsKeyPressed(KEY_NINE)) {
+        if(cellTypes[8].index != -1 ) {
+            selectedCellType = cellTypes[8].index;
+        }
+    }
+    if(IsKeyPressed(KEY_ZERO)) {
+        if(cellTypes[9].index != -1 ) {
+            selectedCellType = cellTypes[9].index;
+        }
+    }
+
+    
+
+    if (IsKeyPressed(KEY_ENTER) && (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)))
+    {        
         if (IsWindowFullscreen())
         {
             // if we are full screen, then go back to the windowed size
@@ -491,10 +179,18 @@ void Loop() {
             SetWindowSize(GetMonitorWidth(display), GetMonitorHeight(display));
             active_width = GetMonitorWidth(display);
             active_height = GetMonitorHeight(display);
+            
         }
 
         // toggle the state
         ToggleFullscreen();
+    }
+
+    if(IsWindowResized()) {
+        camera.target = (Vector2) { (active_width / 2) , (active_height / 2)};
+        camera.offset = camera.target;
+        camera.target = (Vector2) {((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) / 2, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) / 2};
+        
     }
 
     if(fileDialogState.SelectFilePressed) {
@@ -515,7 +211,6 @@ void Loop() {
                 fileDialogState.prevFilesListActive = fileDialogState.filesListActive;
                 fclose(fp);
             } else {
-                //TEDO Load file and clear the cells with the new default cell
                 strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
                 fp = fopen(fileNameToLoad, "r");
 
@@ -564,6 +259,8 @@ void Loop() {
     } else {
         isMousePressed = false;
     }
+
+    
 
     if(generationFramesCounter >= TARGET_FPS) {
         generationFramesCounter = 0;
@@ -617,7 +314,18 @@ void Loop() {
     
     EndMode2D();
 
-    HandleUI();
+    if(isCinematic == false) {
+        HandleUI();
+    }
+
+    if(isDebug) {
+        DrawText(TextFormat("Processor time used by CELLS: %lg sec.\n", \
+        cells_performance_timer), 50, 100, 10, BLACK);
+        DrawText(TextFormat("Processor time used by CHANGES: %lg sec.\n", \
+        changes_performance_timer), 50, 120, 10, BLACK);
+        DrawText(TextFormat("Processor time used by PRE-CHANGES: %lg sec.\n", \
+        pre_changes_performance_timer), 50, 140, 10, BLACK);
+    }
 
     if (fileDialogState.fileDialogActive) GuiLock();
     GuiUnlock();
@@ -784,7 +492,7 @@ void HandleUI() {
                     }
                 //}
                 selectedColor = WHITE;
-                selectedNeighbourType = 0;
+                //selectedNeighbourType = 0;
                 letterCount = 0;
                 isDefault = 0;
                 isImmovable = 0;
@@ -794,9 +502,20 @@ void HandleUI() {
                 for(int i = 0; i < MAX_RELATIONSHIPS; i++) {
                     newTargetRelationShips[i].index = -1;
                     newTargetRelationShips[i].amount = 0;
-                    newTargetRelationShips[i].relationshipType = 0;
+                    newTargetRelationShips[i].comparisonType = 0;
                     newTargetRelationShips[i].resultCellTypeIndex = 0;
                     newTargetRelationShips[i].targetCellTypeIndex = 0;
+                    newTargetRelationShips[i].chance = MIN_CHANCE;
+                    newTargetRelationShips[i].relationshipType = 0;
+
+                    newTargetRelationShips[i].bottomLeft = 0;
+                    newTargetRelationShips[i].bottom = 0;
+                    newTargetRelationShips[i].bottomRight = 0;
+                    newTargetRelationShips[i].right = 0;
+                    newTargetRelationShips[i].topRight = 0;
+                    newTargetRelationShips[i].top = 0;
+                    newTargetRelationShips[i].topLeft = 0;
+                    newTargetRelationShips[i].left = 0;
                 }
             }
             if(GuiButton((Rectangle) {contentPositionX, 0.66 * SCREEN_HEIGHT, 100, 20}, "Save Rule")) {

@@ -1,21 +1,18 @@
 #define VECTOR_INIT_CAPACITY 6
 #define UNDEFINE  -1
 #define SUCCESS 0
-#define VECTOR_INIT(vec) vector vec;\
- vector_init(&vec)
-//Store and track the stored data
+
+int vectorCapacity = VECTOR_INIT_CAPACITY;
 typedef struct sVectorList
 {
     struct FromTo **items;
     int capacity;
     int total;
 } sVectorList;
-//structure contain the function pointer
 typedef struct sVector vector;
 struct sVector
 {
     sVectorList vectorList;
-//function pointers
     int (*pfVectorTotal)(vector *);
     int (*pfVectorResize)(vector *, int);
     int (*pfVectorAdd)(vector *, struct FromTo *);
@@ -25,6 +22,7 @@ struct sVector
     int (*pfVectorFree)(vector *);
     int (*pfVectorSort)(vector *);
 };
+void vector_init(vector *v);
 int compare(const struct FromTo * elem1, const struct FromTo * elem2) {
     if(elem1->toCellX < elem2->toCellX) {
         return 1;
@@ -34,8 +32,6 @@ int compare(const struct FromTo * elem1, const struct FromTo * elem2) {
     return 0;
 }
 void vectorSort(vector *v){
-    //qsort(v->vectorList.items, v->vectorList.total, sizeof(struct FromTo), compare);
-    
     for(int i = 0; i < v->vectorList.total; ++i) {
         for(int j = i + 1; j < v->vectorList.total; j++) {
             if(v->vectorList.items[i]->toCellX < v->vectorList.items[j]->toCellX &&
@@ -73,6 +69,7 @@ int vectorResize(vector *v, int capacity)
         {
             v->vectorList.items = items;
             v->vectorList.capacity = capacity;
+            vectorCapacity = capacity; // TEDO I Might want to remove this
             status = SUCCESS;
         }
     }
@@ -93,6 +90,10 @@ int vectorPushBack(vector *v, struct FromTo *item)
         }
         else
         {
+            // TEDO I might need to remove this
+            if(v->vectorList.items == NULL) {
+                vector_init(v);
+            }
             v->vectorList.items[v->vectorList.total++] = item;
             status = SUCCESS;
         }
@@ -154,7 +155,10 @@ int vectorFree(vector *v)
     {
         for (int i = 0; (i < v->vectorList.total - 1); i++)
         {
-            free(v->vectorList.items[i]);
+            if(v->vectorList.items[i] != 0) {
+                free(v->vectorList.items[i]);
+            }
+            
         }
         free(v->vectorList.items);
         v->vectorList.items = NULL;
@@ -164,7 +168,6 @@ int vectorFree(vector *v)
 }
 void vector_init(vector *v)
 {
-    //init function pointers
     v->pfVectorTotal = vectorTotal;
     v->pfVectorResize = vectorResize;
     v->pfVectorAdd = vectorPushBack;
@@ -173,8 +176,9 @@ void vector_init(vector *v)
     v->pfVectorFree = vectorFree;
     v->pfVectorSort = vectorSort;
     v->pfVectorDelete = vectorDelete;
-    //initialize the capacity and allocate the memory
-    v->vectorList.capacity = VECTOR_INIT_CAPACITY;
+
+
+    v->vectorList.capacity = vectorCapacity;
     v->vectorList.total = 0;
     v->vectorList.items = malloc(sizeof(struct FromTo *) * v->vectorList.capacity);
 }
