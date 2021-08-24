@@ -183,67 +183,273 @@ void LoopCells() {
                         int neighbourCounter = 0;
 
                         if(cellTypes[cellIndex].targetCellRelationship[i]->bottomLeft) {
-                            int currentCellX = x - 1 >= 0 ? x - 1 : ( isWrapping == true ? MAX_CELLS_X - 1 : x - 1 );
-                            int currentCellY = y + 1 <= MAX_CELLS_Y - 1 ? y + 1 : (isWrapping == true ? 0 : y + 1);
+                            //int currentCellX = x - 1 >= 0 ? x - 1 : ( isWrapping == true ? MAX_CELLS_X - 1 : x - 1 );
+                            //int currentCellY = y + 1 <= MAX_CELLS_Y - 1 ? y + 1 : (isWrapping == true ? 0 : y + 1);
 
-                            if(currentCellX >= 0 && currentCellX < MAX_CELLS_X && currentCellY >= 0 && currentCellY < MAX_CELLS_Y && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
-                                //neighbours[neighbourCounter] = currentCellX;
-                                //neighbours[neighbourCounter + 1] = currentCellY;
-                                neighbours[neighbourCounter].cellX = x;
-                                neighbours[neighbourCounter].cellY = y;
-                                neighbours[neighbourCounter].toCellX = currentCellX;
-                                neighbours[neighbourCounter].toCellY = currentCellY;
-                                neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
-                                neighbourCounter++;
+                            // if(currentCellX >= 0 && currentCellX < MAX_CELLS_X && currentCellY >= 0 && currentCellY < MAX_CELLS_Y && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
+                            //     //neighbours[neighbourCounter] = currentCellX;
+                            //     //neighbours[neighbourCounter + 1] = currentCellY;
+                            //     neighbours[neighbourCounter].cellX = x;
+                            //     neighbours[neighbourCounter].cellY = y;
+                            //     neighbours[neighbourCounter].toCellX = currentCellX;
+                            //     neighbours[neighbourCounter].toCellY = currentCellY;
+                            //     neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
+                            //     neighbourCounter++;
+                            // }
+                            int currentCellX = x;
+                            int currentCellY = y;
+
+                            int tempCellY = currentCellY;
+                            int tempCellX = currentCellX;
+                            for(int i = 0; i < cellTypes[cellIndex].targetCellRelationship[i]->amount; i++) {
+                                if(tempCellY <= MAX_CELLS_Y - 1) {
+                                    tempCellY++;
+                                }
+                                if(tempCellX >= 0) {
+                                    tempCellX--;
+                                }
+                                if(tempCellY > MAX_CELLS_Y - 1) {
+                                    if(isWrapping == true) {
+                                        tempCellY = 0;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if(tempCellX < 0) {
+                                    if(isWrapping == true) {
+                                        tempCellY = MAX_CELLS_X - 1;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if(cells[tempCellX][tempCellY] == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex) {
+                                    currentCellY = tempCellY;
+                                    currentCellX = tempCellX;
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            if(currentCellX >= 0 && currentCellX < MAX_CELLS_X) {
+                                if(currentCellY >= 0 && currentCellY < MAX_CELLS_Y) {
+                                    if(currentCellY != y && currentCellX != x
+                                    && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex 
+                                        || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
+                                        neighbours[neighbourCounter].cellX = x;
+                                        neighbours[neighbourCounter].cellY = y;
+                                        neighbours[neighbourCounter].toCellX = currentCellX;
+                                        neighbours[neighbourCounter].toCellY = currentCellY;
+                                        neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
+                                        neighbourCounter++;
+                                        
+                                    }
+                                }
                             }
                         }
                         if(cellTypes[cellIndex].targetCellRelationship[i]->bottom) {
                             int currentCellX = x;
-                            cellTypes[cellIndex].lookDistance;
-                            int 
-                            int currentCellY = y + 1 <= MAX_CELLS_Y - 1 ? y + 1 : ( isWrapping == true ? 0 : y + 1 );
-                            if(currentCellX >= 0 
-                            && currentCellX < MAX_CELLS_X 
-                            && currentCellY >= 0 
-                            && currentCellY < MAX_CELLS_Y 
-                            && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex 
-                                || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
-                                //neighbours[neighbourCounter] = currentCellX;
-                                //neighbours[neighbourCounter + 1] = currentCellY;
-                                neighbours[neighbourCounter].cellX = x;
-                                neighbours[neighbourCounter].cellY = y;
-                                neighbours[neighbourCounter].toCellX = currentCellX;
-                                neighbours[neighbourCounter].toCellY = currentCellY;
-                                neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
-                                neighbourCounter++;
+                            int currentCellY = y;
+
+                            int tempIndex = currentCellY;
+                            for(int i = 0; i < cellTypes[cellIndex].targetCellRelationship[i]->amount; i++) {
+                                if(tempIndex <= MAX_CELLS_Y - 1) {
+                                    tempIndex++;
+                                }
+                                if(tempIndex > MAX_CELLS_Y - 1) {
+                                    if(isWrapping == true) {
+                                        tempIndex = 0;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if(cells[currentCellX][tempIndex] == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex) {
+                                    currentCellY = tempIndex;
+                                } else {
+                                    break;
+                                }
                             }
+
+                            if(currentCellX >= 0 && currentCellX < MAX_CELLS_X) {
+                                if(currentCellY >= 0 && currentCellY < MAX_CELLS_Y) {
+                                    if(currentCellY != y 
+                                    && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex 
+                                        || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
+                                        neighbours[neighbourCounter].cellX = x;
+                                        neighbours[neighbourCounter].cellY = y;
+                                        neighbours[neighbourCounter].toCellX = currentCellX;
+                                        neighbours[neighbourCounter].toCellY = currentCellY;
+                                        neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
+                                        neighbourCounter++;
+                                        
+                                    }
+                                }
+                            }
+
+
+
+                            // int xDiff = x - currentCellX;
+                            // int yDiff = y - currentCellY;
+
+                            // bool xDiffIsLarger = (xDiff < 0 ? -xDiff : xDiff) > (yDiff < 0 ? -yDiff : yDiff);
+                            // int xModifier = xDiff < 0 ? 1 : -1;
+                            // int yModifier = yDiff < 0 ? 1 : -1;
+
+                            // bool xDiffSmaller = (xDiff < 0 ? -xDiff : xDiff) < (yDiff < 0 ? -yDiff : yDiff);
+                            // int upperBound = xDiffSmaller ? (yDiff < 0 ? -yDiff : yDiff) : (xDiff < 0 ? -xDiff : xDiff);
+                            // int min = xDiffSmaller ? (xDiff < 0 ? -xDiff : xDiff) : (yDiff < 0 ? -yDiff : yDiff);
+                            // float slope = ( min == 0 || upperBound == 0) ? 0 : ((float) (min + 1) / (upperBound + 1));
+
+                            // int smallerCount;
+                            // for(int i = 1; i <= upperBound; i++) {
+                            //     smallerCount = (int) floor(i * slope);
+                            //     int yIncrease, xIncrease;
+                            //     if(xDiffIsLarger) {
+                            //         xIncrease = i;
+                            //         yIncrease = smallerCount;
+                            //     } else {
+                            //         yIncrease = i;
+                            //         xIncrease = smallerCount;
+                            //     }
+
+                            //     int currentX = x + (xIncrease * xModifier);
+                            //     int currentY = y + (yIncrease * yModifier);
+
+                            //     if(currentX >= 0 && currentX < MAX_CELLS_X) {
+                            //         if(currentY >= 0 && currentY < MAX_CELLS_Y) {
+                            //             // if(currentY != y 
+                            //             // && (cellTypes[finalCells[currentX][currentY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex 
+                            //             //     || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
+                            //             //     neighbours[neighbourCounter].cellX = x;
+                            //             //     neighbours[neighbourCounter].cellY = y;
+                            //             //     neighbours[neighbourCounter].toCellX = currentX;
+                            //             //     neighbours[neighbourCounter].toCellY = currentY;
+                            //             //     neighbours[neighbourCounter].resultId = cells[currentX][currentY];
+                            //             //     neighbourCounter++;
+                                            
+                            //             // }
+                            //         }
+                            //     }
+                            // }
+                            //int currentCellY = y + 1 <= MAX_CELLS_Y - 1 ? y + 1 : ( isWrapping == true ? 0 : y + 1 );
+
+
+                            
                         }
                         if(cellTypes[cellIndex].targetCellRelationship[i]->bottomRight) {
-                            int currentCellX = x + 1 <= MAX_CELLS_X - 1 ? x + 1 : ( isWrapping == true ? 0 : x + 1 );
-                            int currentCellY = y + 1 <= MAX_CELLS_Y - 1 ? y + 1 : ( isWrapping == true ? 0 : y + 1 );
-                            if(currentCellX >= 0 && currentCellX < MAX_CELLS_X && currentCellY >= 0 && currentCellY < MAX_CELLS_Y && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
-                                //neighbours[neighbourCounter] = currentCellX;
-                                //neighbours[neighbourCounter + 1] = currentCellY;
-                                neighbours[neighbourCounter].cellX = x;
-                                neighbours[neighbourCounter].cellY = y;
-                                neighbours[neighbourCounter].toCellX = currentCellX;
-                                neighbours[neighbourCounter].toCellY = currentCellY;
-                                neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
-                                neighbourCounter++;
+                            // int currentCellX = x + 1 <= MAX_CELLS_X - 1 ? x + 1 : ( isWrapping == true ? 0 : x + 1 );
+                            // int currentCellY = y + 1 <= MAX_CELLS_Y - 1 ? y + 1 : ( isWrapping == true ? 0 : y + 1 );
+                            // if(currentCellX >= 0 && currentCellX < MAX_CELLS_X && currentCellY >= 0 && currentCellY < MAX_CELLS_Y && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
+                            //     //neighbours[neighbourCounter] = currentCellX;
+                            //     //neighbours[neighbourCounter + 1] = currentCellY;
+                            //     neighbours[neighbourCounter].cellX = x;
+                            //     neighbours[neighbourCounter].cellY = y;
+                            //     neighbours[neighbourCounter].toCellX = currentCellX;
+                            //     neighbours[neighbourCounter].toCellY = currentCellY;
+                            //     neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
+                            //     neighbourCounter++;
+                            // }
+                            int currentCellX = x;
+                            int currentCellY = y;
+
+                            int tempCellY = currentCellY;
+                            int tempCellX = currentCellX;
+                            for(int i = 0; i < cellTypes[cellIndex].targetCellRelationship[i]->amount; i++) {
+                                if(tempCellY <= MAX_CELLS_Y - 1) {
+                                    tempCellY++;
+                                }
+                                if(tempCellX <= MAX_CELLS_X - 1) {
+                                    tempCellX++;
+                                }
+                                if(tempCellY > MAX_CELLS_Y - 1) {
+                                    if(isWrapping == true) {
+                                        tempCellY = 0;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if(tempCellX > MAX_CELLS_X - 1) {
+                                    if(isWrapping == true) {
+                                        tempCellY = 0;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if(cells[tempCellX][tempCellY] == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex) {
+                                    currentCellY = tempCellY;
+                                    currentCellX = tempCellX;
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            if(currentCellX >= 0 && currentCellX < MAX_CELLS_X) {
+                                if(currentCellY >= 0 && currentCellY < MAX_CELLS_Y) {
+                                    if(currentCellY != y && currentCellX != x
+                                    && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex 
+                                        || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
+                                        neighbours[neighbourCounter].cellX = x;
+                                        neighbours[neighbourCounter].cellY = y;
+                                        neighbours[neighbourCounter].toCellX = currentCellX;
+                                        neighbours[neighbourCounter].toCellY = currentCellY;
+                                        neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
+                                        neighbourCounter++;
+                                        
+                                    }
+                                }
                             }
                         }
                         if(cellTypes[cellIndex].targetCellRelationship[i]->right) {
-                            int currentCellX = x + 1 <= MAX_CELLS_X - 1 ? x + 1 : ( isWrapping == true ? 0 : x + 1 );
+                            // int currentCellX = x + 1 <= MAX_CELLS_X - 1 ? x + 1 : ( isWrapping == true ? 0 : x + 1 );
+                            // int currentCellY = y;
+                            // if(currentCellX >= 0 && currentCellX < MAX_CELLS_X && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
+                            //     //neighbours[neighbourCounter] = currentCellX;
+                            //     //neighbours[neighbourCounter + 1] = currentCellY;
+                            //     neighbours[neighbourCounter].cellX = x;
+                            //     neighbours[neighbourCounter].cellY = y;
+                            //     neighbours[neighbourCounter].toCellX = currentCellX;
+                            //     neighbours[neighbourCounter].toCellY = currentCellY;
+                            //     neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
+                            //     neighbourCounter++;
+                            // }
+                            int currentCellX = x;
                             int currentCellY = y;
-                            if(currentCellX >= 0 && currentCellX < MAX_CELLS_X && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
-                                //neighbours[neighbourCounter] = currentCellX;
-                                //neighbours[neighbourCounter + 1] = currentCellY;
-                                neighbours[neighbourCounter].cellX = x;
-                                neighbours[neighbourCounter].cellY = y;
-                                neighbours[neighbourCounter].toCellX = currentCellX;
-                                neighbours[neighbourCounter].toCellY = currentCellY;
-                                neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
-                                neighbourCounter++;
+
+                            int tempCellY = currentCellY;
+                            int tempCellX = currentCellX;
+                            for(int i = 0; i < cellTypes[cellIndex].targetCellRelationship[i]->amount; i++) {
+                                
+                                if(tempCellX <= MAX_CELLS_X - 1) {
+                                    tempCellX++;
+                                }
+                                if(tempCellX > MAX_CELLS_X - 1) {
+                                    if(isWrapping == true) {
+                                        tempCellY = 0;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if(cells[tempCellX][tempCellY] == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex) {
+                                    currentCellY = tempCellY;
+                                    currentCellX = tempCellX;
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            if(currentCellX >= 0 && currentCellX < MAX_CELLS_X) {
+                                if(currentCellY >= 0 && currentCellY < MAX_CELLS_Y) {
+                                    if(currentCellX != x
+                                    && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex 
+                                        || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
+                                        neighbours[neighbourCounter].cellX = x;
+                                        neighbours[neighbourCounter].cellY = y;
+                                        neighbours[neighbourCounter].toCellX = currentCellX;
+                                        neighbours[neighbourCounter].toCellY = currentCellY;
+                                        neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
+                                        neighbourCounter++;
+                                        
+                                    }
+                                }
                             }
                         }
                         if(cellTypes[cellIndex].targetCellRelationship[i]->topRight) {
@@ -290,17 +496,57 @@ void LoopCells() {
                             }
                         }
                         if(cellTypes[cellIndex].targetCellRelationship[i]->left) {
-                            int currentCellX = x - 1 >= 0 ? x - 1 : ( isWrapping == true ? MAX_CELLS_X - 1 : x - 1 );
+                            // int currentCellX = x - 1 >= 0 ? x - 1 : ( isWrapping == true ? MAX_CELLS_X - 1 : x - 1 );
+                            // int currentCellY = y;
+                            // if(currentCellX >= 0 && currentCellX < MAX_CELLS_X && currentCellY >= 0 && currentCellY < MAX_CELLS_Y && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
+                            //     //neighbours[neighbourCounter] = currentCellX;
+                            //     //neighbours[neighbourCounter + 1] = currentCellY;
+                            //     neighbours[neighbourCounter].cellX = x;
+                            //     neighbours[neighbourCounter].cellY = y;
+                            //     neighbours[neighbourCounter].toCellX = currentCellX;
+                            //     neighbours[neighbourCounter].toCellY = currentCellY;
+                            //     neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
+                            //     neighbourCounter++;
+                            // }
+                            int currentCellX = x;
                             int currentCellY = y;
-                            if(currentCellX >= 0 && currentCellX < MAX_CELLS_X && currentCellY >= 0 && currentCellY < MAX_CELLS_Y && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
-                                //neighbours[neighbourCounter] = currentCellX;
-                                //neighbours[neighbourCounter + 1] = currentCellY;
-                                neighbours[neighbourCounter].cellX = x;
-                                neighbours[neighbourCounter].cellY = y;
-                                neighbours[neighbourCounter].toCellX = currentCellX;
-                                neighbours[neighbourCounter].toCellY = currentCellY;
-                                neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
-                                neighbourCounter++;
+
+                            int tempCellY = currentCellY;
+                            int tempCellX = currentCellX;
+                            for(int i = 0; i < cellTypes[cellIndex].targetCellRelationship[i]->amount; i++) {
+                                
+                                if(tempCellX > 0) {
+                                    tempCellX--;
+                                }
+                                if(tempCellX < 0) {
+                                    if(isWrapping == true) {
+                                        tempCellY = MAX_CELLS_X - 1;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if(cells[tempCellX][tempCellY] == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex) {
+                                    currentCellY = tempCellY;
+                                    currentCellX = tempCellX;
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            if(currentCellX >= 0 && currentCellX < MAX_CELLS_X) {
+                                if(currentCellY >= 0 && currentCellY < MAX_CELLS_Y) {
+                                    if(currentCellX != x
+                                    && (cellTypes[finalCells[currentCellX][currentCellY]].index == cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex 
+                                        || cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex == -1)) {
+                                        neighbours[neighbourCounter].cellX = x;
+                                        neighbours[neighbourCounter].cellY = y;
+                                        neighbours[neighbourCounter].toCellX = currentCellX;
+                                        neighbours[neighbourCounter].toCellY = currentCellY;
+                                        neighbours[neighbourCounter].resultId = cells[currentCellX][currentCellY];
+                                        neighbourCounter++;
+                                        
+                                    }
+                                }
                             }
                         }
 

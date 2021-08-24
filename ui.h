@@ -915,6 +915,7 @@ void HandleEditCellUI() {
             strcpy(cellTypes[selectedIndex].name, cellName);
             //cellTypes[selectedIndex].neighbourType = selectedNeighbourType;
             cellTypes[selectedIndex].immovable = isImmovable;
+            cellTypes[selectedIndex].lookDistance = 5;
             
             for(int x = 0; x < MAX_RELATIONSHIPS; x++) {
                 cellTypes[selectedIndex].targetCellRelationship[x] = malloc(sizeof(T_TargetCellRelationship));
