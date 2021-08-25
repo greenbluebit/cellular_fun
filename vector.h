@@ -1,4 +1,4 @@
-#define VECTOR_INIT_CAPACITY 500 * 500
+#define VECTOR_INIT_CAPACITY 260 * 125
 #define UNDEFINE  -1
 #define SUCCESS 0
 
