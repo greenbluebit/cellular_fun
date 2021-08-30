@@ -36,7 +36,7 @@ int ParseJson(char *string) {
     cJSON *jsonRelationshipIndex = NULL;
     cJSON *jsonResultIndex = NULL;
 
-    if(parent == NULL) {
+    if(parent == 0) {
         const char *error_ptr = cJSON_GetErrorPtr();
         if (error_ptr != NULL)
         {
@@ -48,7 +48,7 @@ int ParseJson(char *string) {
 
     
     jsonDefaultCell = cJSON_GetObjectItemCaseSensitive(parent, "defaultcell");
-    if(jsonDefaultCell != NULL) {
+    if(jsonDefaultCell != 0) {
         defaultCell = jsonDefaultCell->valueint;
         selectedCellType = defaultCell;
         for(int x = 0; x < MAX_CELLS_X; x++) {
@@ -77,13 +77,13 @@ int ParseJson(char *string) {
         jsonNeighbourType = cJSON_GetObjectItemCaseSensitive(jsonCellType, "neighbourtype");
         jsonColor = cJSON_GetObjectItemCaseSensitive(jsonCellType, "color");
         jsonIsImmovable = cJSON_GetObjectItemCaseSensitive(jsonCellType, "isimmovable");
-        if(jsonIsImmovable != NULL) {
+        if(jsonIsImmovable != 0) {
             cellTypes[jsonIndex->valueint].isImmovable = jsonIsImmovable->valueint;
         } else {
             cellTypes[jsonIndex->valueint].isImmovable = 0; // TEDO I might not need this
         }
         jsonIsMaintainingVelocity = cJSON_GetObjectItemCaseSensitive(jsonCellType, "ismaintainingvelocity");
-        if(jsonIsMaintainingVelocity != NULL) {
+        if(jsonIsMaintainingVelocity != 0) {
             cellTypes[jsonIndex->valueint].isMaintainingVelocity = jsonIsMaintainingVelocity->valueint;
         } else {
             cellTypes[jsonIndex->valueint].isMaintainingVelocity = 0;
@@ -91,7 +91,7 @@ int ParseJson(char *string) {
 
         jsonIsMaintainingVelocity = NULL;
 
-        if(jsonColor == NULL) {
+        if(jsonColor == 0) {
             const char *error_ptr = cJSON_GetErrorPtr();
             if (error_ptr != NULL)
             {
@@ -111,6 +111,13 @@ int ParseJson(char *string) {
         cellTypes[jsonIndex->valueint].index = jsonIndex->valueint;
         cellTypes[jsonIndex->valueint].color = CLITERAL(Color){ jsonR->valueint, jsonG->valueint, jsonB->valueint, jsonA->valueint };
         
+        for(int x = 0; x < MAX_NAME_LENGTH; x++) {
+            if(cellTypes[jsonIndex->valueint].name[x] != '\0') {
+                cellTypes[jsonIndex->valueint].name[x] = '\0';
+            } else {
+                break;
+            }
+        }
         strcpy(cellTypes[jsonIndex->valueint].name, jsonName->valuestring);
 
 
@@ -120,7 +127,7 @@ int ParseJson(char *string) {
         cJSON_ArrayForEach(jsonTargetRelationship, jsonTargetRelationships) {
             jsonTargetIndex = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "targetindex");
             jsonComparisonType = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "relationshiptype");
-            if(jsonComparisonType == NULL) {
+            if(jsonComparisonType == 0) {
                 jsonComparisonType = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "comparisontype");
             }
             
@@ -136,7 +143,7 @@ int ParseJson(char *string) {
                     cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint] = malloc(sizeof(T_TargetCellRelationship));
                 }
                 cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->amount = jsonAmount->valueint;
-                if(jsonToAmount != NULL) {
+                if(jsonToAmount != 0) {
                     cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->toAmount = jsonToAmount->valueint;
                 } else {
                     cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->toAmount = 0;
@@ -145,20 +152,20 @@ int ParseJson(char *string) {
                 cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->comparisonType = jsonComparisonType->valueint;
                 cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->resultCellTypeIndex = jsonResultIndex->valueint;
                 cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->targetCellTypeIndex = jsonTargetIndex->valueint;
-                if(jsonChance != NULL) {
+                if(jsonChance != 0) {
                     cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->chance = jsonChance->valueint;
                 } else {
                     cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->chance = MAX_CHANCE;
                 }
                 
-                if(jsonRelationshipType != NULL) {
+                if(jsonRelationshipType != 0) {
                     cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->relationshipType = jsonRelationshipType->valueint;
                 } else {
                     cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->relationshipType = 0;
                 }
                 
                 
-                if(jsonNeighbourType != NULL) {
+                if(jsonNeighbourType != 0) {
                     if(jsonNeighbourType->valueint == 0) {
                         cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottomLeft = 1;
                         cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->bottom = 1;
@@ -261,10 +268,10 @@ char *PrintJson() {
     cJSON *jsonToAmount = NULL;
     cJSON *jsonRelationshipIndex = NULL;
     cJSON *jsonResultIndex = NULL;
-    cJSON *jsonCells = NULL;
+    //cJSON *jsonCells = NULL;
 
     cJSON *parent = cJSON_CreateObject();
-    if(parent == NULL) {
+    if(parent == 0) {
         goto end;
     }
 
@@ -276,7 +283,7 @@ char *PrintJson() {
 
     for(int i = 0; i < MAX_CELLTYPES; i++) {
         jsonCellType = cJSON_CreateObject();
-        if(jsonCellType == NULL) { // TEDO I Need to do this check at the rest of the json initializers
+        if(jsonCellType == 0) { // TEDO I Need to do this check at the rest of the json initializers
             goto end;
         }
         cJSON_AddItemToArray(jsonCellTypes, jsonCellType);

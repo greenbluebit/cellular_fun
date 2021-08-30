@@ -242,6 +242,7 @@ void CloseDialog(GuiFileDialogState *state) {
 
     dirFilesIcon = NULL;
     state->dirFiles = NULL;
+    //state->SelectFilePressed = false;
 }
 
 // Update and draw file dialog

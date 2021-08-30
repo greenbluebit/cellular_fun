@@ -5,8 +5,6 @@
 #define MAX_CELLS_X             360
 #define MAX_CELLS_Y             190
 
-#include "vector.h"
-
 //#define MAX_CELLS_X             500
 //#define MAX_CELLS_Y             500
 
@@ -36,7 +34,7 @@ int defaultCell = 0;
 
 bool isWrapping = true;
 
-vector changes;
+struct FromTo changes[MAX_CELLS_X * MAX_CELLS_Y];
 int changeIndexes[MAX_CELLS_X*MAX_CELLS_Y] = {0};
 
 struct FromTo neighbours [8];
@@ -52,22 +50,11 @@ double pre_changes_performance_timer = 0;
 void handleFromTo(int x, int y, int neighbourIndex) {
     int index = (MAX_CELLS_X) * y + x;
     
-    struct FromTo *fromTo = changes.pfVectorGet(&changes, index);
-    // if(changes.pfVectorGet(&changes, changes.pfVectorTotal(&changes) - 1)) {
-    //     fromTo = changes.pfVectorGet(&changes, changes.pfVectorTotal(&changes) - 1);
-    // } else {
-    //     fromTo = (struct FromTo*) malloc(sizeof(struct FromTo));
-    // }
-    //fromTo = (struct FromTo*) malloc(sizeof(struct FromTo));
-    if(fromTo == 0) {
-        index = 0; // TEDO Investigate this
-    }
-
-    fromTo->cellX = x;
-    fromTo->cellY = y;
-    fromTo->toCellX = neighbours[neighbourIndex].toCellX;
-    fromTo->toCellY = neighbours[neighbourIndex].toCellY;
-    fromTo->resultId = neighbours[neighbourIndex].resultId;
+    changes[index].cellX = x;
+    changes[index].cellY = y;
+    changes[index].toCellX = neighbours[neighbourIndex].toCellX;
+    changes[index].toCellY = neighbours[neighbourIndex].toCellY;
+    changes[index].resultId = neighbours[neighbourIndex].resultId;
 
 }
 
@@ -129,7 +116,6 @@ void findNextNeighbour(struct FromTo *fromTo, int targetCellIndex, int amountX, 
 
 void shuffle(int *array, size_t n) {
     if (n > 1) {
-        size_t i;
         for(int i = 0; i < n - 1; i++) {
             size_t j = i + rand() / (RAND_MAX / (n - i) + 1);
             int t = array[j];
@@ -151,20 +137,8 @@ void SetupCells() {
         cellTypes[i].color.b = 221;
         strcpy(cellTypes[i].name, "Unset");
     }
-    // for(int i = 0; i < MAX_CELLS_X * MAX_CELLS_Y; i++) {
-    //     changeIndexes[i] = i;
-    // }
-
-    //shuffle(changeIndexes, MAX_CELLS_X * MAX_CELLS_Y);
-    // RAYGUI_CLITERAL(Color){ (unsigned char)(204.0f*204),
-                                //  (unsigned char)(210.0f*210),
-                                //  (unsigned char)(221.0f*221),ddddd
-                                //  (unsigned char)(255.0f*(float)255/255.0f) };
-    
     cellTypes[0].index = 0;
     strcpy(cellTypes[0].name, "Default");
-
-    vector_init(&changes);
 }
 
 void LoopCells() {
@@ -179,7 +153,11 @@ void LoopCells() {
             neighbourCounter = 0;  
             for(int i = 0; i < MAX_RELATIONSHIPS; i++) {
                 bool relationshipFullfilled = false;
-                if(cellTypes[cellIndex].targetCellRelationship[i] != 0 && cellTypes[cellIndex].targetCellRelationship[i]->index > -1 && (cellTypes[cellIndex].isImmovable == false || (cellTypes[cellIndex].isImmovable == true && cellTypes[cellIndex].targetCellRelationship[i]->relationshipType == 0 ))) {
+                if(cellTypes[cellIndex].targetCellRelationship[i] != 0 
+                && cellTypes[cellIndex].targetCellRelationship[i]->index > -1 
+                && (cellTypes[cellIndex].isImmovable == false 
+                    || (cellTypes[cellIndex].isImmovable == true 
+                        && cellTypes[cellIndex].targetCellRelationship[i]->relationshipType == 0 ))) {
                     // bool relationshipFullfilled = false; 
                     int chanceValue = GetRandomValue(0, MAX_CHANCE);
                     int chance = cellTypes[cellIndex].targetCellRelationship[i]->chance == MAX_CHANCE || chanceValue <= cellTypes[cellIndex].targetCellRelationship[i]->chance;
@@ -289,7 +267,6 @@ void LoopCells() {
                             
                         }
                     } else if(chance && cellTypes[cellIndex].targetCellRelationship[i]->relationshipType == 1 && cellTypes[cellIndex].isImmovable == false) {
-                              
 
                         if(cellTypes[cellIndex].targetCellRelationship[i]->bottomLeft) {
                             struct FromTo *fromTo = malloc(sizeof(struct FromTo));
@@ -579,169 +556,45 @@ void LoopCells() {
                 if(index == 249999) {
                     index = index;
                 }
-                // struct FromTo *fromTo = changes.pfVectorGet(&changes, index);
-                // // if(changes.pfVectorGet(&changes, changes.pfVectorTotal(&changes) - 1)) {
-                // //     fromTo = changes.pfVectorGet(&changes, changes.pfVectorTotal(&changes) - 1);
-                // // } else {
-                // //     fromTo = (struct FromTo*) malloc(sizeof(struct FromTo));
-                // // }
-                // //fromTo = (struct FromTo*) malloc(sizeof(struct FromTo));
-                // if(fromTo == 0) {
-                //     index = 0;
-                // }
-
-                // fromTo->cellX = x;
-                // fromTo->cellY = y;
-                // fromTo->toCellX = neighbours[randomNeighbour].toCellX;
-                // fromTo->toCellY = neighbours[randomNeighbour].toCellY;
-                // fromTo->resultId = neighbours[randomNeighbour].resultId;
-
-
                 handleFromTo(x, y, randomNeighbour);
                 neighbourCounter = 0;
-
-                //changes.vectorSet(&changes, x + y * (MAX_CELLS_X), fromTo);
-
-                // 
-                // //cells[neighbours[randomNeighbour]][neighbours[randomNeighbour + 1]] = cellIndex;
-                // finalCells[neighbours[randomNeighbour]][neighbours[randomNeighbour + 1]] = cellIndex;
-                // cells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex;
-                // finalCells[x][y] = cellTypes[cellIndex].targetCellRelationship[i]->targetCellTypeIndex;
             }
         }
     }
-    cells_performance_timer = (clock() - start_clk) / (long double) CLOCKS_PER_SEC;
-    if(changes.pfVectorTotal(&changes) > 0) {
-        //changes.pfVectorSort(&changes);
 
-        int iPrev = 0;
-        // struct FromTo *fromo;
-        // fromo = (struct FromTo*) malloc(sizeof(struct FromTo));
-        // fromo->cellX = -1;
-        // fromo->cellY = -1;
-        // fromo->toCellX = -1;
-        // fromo->toCellY = -1;
-        // fromo->resultId = -1;
-
-        // changes.pfVectorAdd(&changes, fromo);
-
-        // struct FromTo *fromToto = changes.pfVectorGet(&changes, 0);
-
-        //shuffle(changeIndexes, MAX_CELLS_X * MAX_CELLS_Y);
-        for(int i = 0; i < changes.pfVectorTotal(&changes) - 1; i++) {
-
-            //int random = iPrev + GetRandomValue(0, i - iPrev);
-
-            struct FromTo *fromTo = changes.pfVectorGet(&changes, i);
-
-            if(fromTo != 0) {
-                // TEDO I'd prefer to have only the active changes in memory, but when freeing A LOT of them, it slows down, this is the best solution, keeping all possible changes in memory and only executing the active ones.
-                if(fromTo->cellX >= 0 && fromTo->cellX <= MAX_CELLS_X - 1) { 
-                    int destX = fromTo->toCellX;
-                    int destY = fromTo->toCellY;
-                    int srcX = fromTo->cellX;
-                    int srcY = fromTo->cellY;
-                    Vector2 direction = (Vector2) {fromTo->toCellX - fromTo->cellX, fromTo->toCellY - fromTo->cellY};
-                    
-                    cells[srcX][srcY].velX = direction.x < 0 ? -1 : direction.x > 0 ? 1 : 0;
-                    cells[srcX][srcY].velY = direction.y < 0 ? -1 : direction.y > 0 ? 1 : 0;
-                    int otherCell = cells[destX] [destY].cellTypeIndex;
-                    int velX = cells[destX][destY].velX;
-                    int velY = cells[destX][destY].velY;
-
-                    cells[destX] [destY].cellTypeIndex = cells[srcX] [srcY].cellTypeIndex;
-                    cells[destX] [destY].velX = cells[srcX] [srcY].velX;
-                    cells[destX] [destY].velY = cells[srcX] [srcY].velY;
-                    cells[srcX] [srcY].cellTypeIndex = cellTypes[otherCell].isImmovable == false ? otherCell : fromTo->resultId;
-                    cells[srcX] [srcY].velX = 0;
-                    cells[srcX] [srcY].velY = 0;
-                    fromTo->cellX = -1;
-                    //iPrev = i + 1;  
-                }
-                
-            }
-
-
-
-            // int random = iPrev + GetRandomValue(0, i - iPrev);
-
-            // struct FromTo *fromTo = changes.pfVectorGet(&changes, random);
-
-            // if(fromTo != 0) {
-            //     if(fromTo->cellX >= 0 && fromTo->cellX <= MAX_CELLS_X - 1) {
-            //         int destX = fromTo->toCellX;
-            //         int destY = fromTo->toCellY;
-            //         int srcX = fromTo->cellX;
-            //         int srcY = fromTo->cellY;
-                    
-            //         int otherCell = cells[destX] [destY];
-            //         cells[destX] [destY] = cells[srcX] [srcY];
-            //         cells[srcX] [srcY] = cellTypes[otherCell].immovable == false ? otherCell : fromTo->resultId;
-
-            //         iPrev = i + 1;  
-            //     }
-                
-            // }
-            
-            
-            //free(changes.pfVectorGet(&changes, random));
-            // if(changes.pfVectorGet(&changes, i) != 0 && changes.pfVectorGet(&changes, i + 1) != 0 && changes.pfVectorGet(&changes, i + 1)->toCellX != changes.pfVectorGet(&changes, i)->cellX &&
-            //     changes.pfVectorGet(&changes, i + 1)->toCellY != changes.pfVectorGet(&changes, i)->toCellY) {
-            //         int random = iPrev + GetRandomValue(0, i - iPrev);
-
-            //         int destX = changes.pfVectorGet(&changes, random)->toCellX;
-            //         int destY = changes.pfVectorGet(&changes, random)->toCellY;
-            //         int srcX = changes.pfVectorGet(&changes, random)->cellX;
-            //         int srcY = changes.pfVectorGet(&changes, random)->cellY;
-                    
-            //         int otherCell = cells[destX] [destY];
-            //         cells[destX] [destY] = cells[srcX] [srcY];
-            //         cells[srcX] [srcY] = cellTypes[otherCell].immovable == false ? otherCell : changes.pfVectorGet(&changes, random)->resultId;
-
-            //         iPrev = i + 1;
-            // }
-        }
-        pre_changes_performance_timer = (clock() - start_clk) / (long double) CLOCKS_PER_SEC;            
-        //changes.pfVectorFree(&changes);
+    if(isDebug) {
+        cells_performance_timer = (clock() - start_clk) / (long double) CLOCKS_PER_SEC;
     }
-    changes_performance_timer = (clock() - start_clk) / (long double) CLOCKS_PER_SEC;
+    
+    
+    for(int i = 0; i < MAX_CELLS_X * MAX_CELLS_Y; i++) {
+        // TEDO I'd prefer to have only the active changes in memory, but when freeing A LOT of them, it slows down, this is the best solution, keeping all possible changes in memory and only executing the active ones.   
+        if(changes[i].cellX >= 0 && changes[i].cellX <= MAX_CELLS_X - 1) { 
+            int destX = changes[i].toCellX;
+            int destY = changes[i].toCellY;
+            int srcX = changes[i].cellX;
+            int srcY = changes[i].cellY;
+            Vector2 direction = (Vector2) {changes[i].toCellX - changes[i].cellX, changes[i].toCellY - changes[i].cellY};
+            
+            cells[srcX][srcY].velX = direction.x < 0 ? -1 : direction.x > 0 ? 1 : 0;
+            cells[srcX][srcY].velY = direction.y < 0 ? -1 : direction.y > 0 ? 1 : 0;
+            int otherCell = cells[destX] [destY].cellTypeIndex;
+
+            cells[destX] [destY].cellTypeIndex = cells[srcX] [srcY].cellTypeIndex;
+            cells[destX] [destY].velX = cells[srcX] [srcY].velX;
+            cells[destX] [destY].velY = cells[srcX] [srcY].velY;
+            cells[srcX] [srcY].cellTypeIndex = cellTypes[otherCell].isImmovable == false ? otherCell : changes[i].resultId;
+            cells[srcX] [srcY].velX = 0;
+            cells[srcX] [srcY].velY = 0;
+            changes[i].cellX = -1;
+        }
+        
+    }
+
+    if(isDebug) {
+        pre_changes_performance_timer = (clock() - start_clk) / (long double) CLOCKS_PER_SEC;     
+        changes_performance_timer = (clock() - start_clk) / (long double) CLOCKS_PER_SEC;
+    }
+    
     
 }
-
-// neighbours
-// 0 - moore
-// 1 - von Neumann
-// 2 - vertical
-// 3 - horizontal
-// 
-
-// int getGridNeighbours(int gridX, int gridY, int cells[MAX_CELLS_X] [MAX_CELLS_Y], int targetNeighbourIndex, int neighbourType) {
-//     int result = 0;
-//     if(cellTypes[cells[gridX][gridY]].neighbourType == 0) {
-//         for(int neighbourX = gridX - 1; neighbourX <= gridX + 1; neighbourX++) {
-//             for(int neighbourY = gridY - 1; neighbourY <= gridY + 1; neighbourY++) {
-//                 int tempNeighbourX = neighbourX >= 0 && neighbourX < MAX_CELLS_X ? neighbourX : neighbourX <= 0 && isWrapping ? MAX_CELLS_X - 1 : neighbourX >= MAX_CELLS_X && isWrapping ? 0 : -1;
-//                 int tempNeighbourY = neighbourY >= 0 && neighbourY < MAX_CELLS_Y ? neighbourY : neighbourY <= 0 && isWrapping ? MAX_CELLS_Y - 1 : neighbourY >= MAX_CELLS_Y && isWrapping ? 0 : -1;
-                
-//                 if(( (tempNeighbourX != gridX || tempNeighbourY != gridY) && tempNeighbourX >= 0 && tempNeighbourX < MAX_CELLS_X 
-//                         && tempNeighbourY >= 0 && tempNeighbourY < MAX_CELLS_Y && cellTypes[cells[tempNeighbourX][tempNeighbourY]].index == targetNeighbourIndex) ) {
-//                     result += 1;
-//                 }
-//             }
-//         }
-        
-//     } else if(cellTypes[cells[gridX][gridY]].neighbourType  == 1) {
-//         result += (gridX - 1 >= 0 && cellTypes[cells[gridX - 1][gridY]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[MAX_CELLS_X - 1] [gridY]].index == targetNeighbourIndex) ? 1 : 0;
-//         result += (gridX + 1 < MAX_CELLS_X && cellTypes[cells[gridX + 1][gridY]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[0][gridY]].index == targetNeighbourIndex) ? 1 : 0;
-//         result += (gridY - 1 >= 0 && cellTypes[cells[gridX][gridY - 1]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[gridX][MAX_CELLS_Y - 1]].index == targetNeighbourIndex) ? 1 : 0;
-//         result += (gridY + 1 < MAX_CELLS_Y && cellTypes[cells[gridX][gridY + 1]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[gridX][0]].index == targetNeighbourIndex) ? 1 : 0;
-//     } else if(cellTypes[cells[gridX][gridY]].neighbourType  == 2) {
-//         result += (gridY - 1 >= 0 && cellTypes[cells[gridX][gridY - 1]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[gridX][MAX_CELLS_Y - 1]].index == targetNeighbourIndex) ? 1 : 0;
-//         result += (gridY + 1 < MAX_CELLS_Y && cellTypes[cells[gridX][gridY + 1]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[gridX][0]].index == targetNeighbourIndex) ? 1 : 0;
-//     } else if(cellTypes[cells[gridX][gridY]].neighbourType  == 3) {
-//         result += (gridX - 1 >= 0 && cellTypes[cells[gridX - 1][gridY]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[MAX_CELLS_X - 1] [gridY]].index == targetNeighbourIndex) ? 1 : 0;
-//         result += (gridX + 1 < MAX_CELLS_X && cellTypes[cells[gridX + 1][gridY]].index == targetNeighbourIndex) || (isWrapping == true && cellTypes[cells[0][gridY]].index == targetNeighbourIndex) ? 1 : 0;
-//     }
-
-//     return result;
-// }

@@ -42,9 +42,6 @@ int selectedIndex = -1;
 struct TargetCellRelationship newTargetRelationShips[MAX_RELATIONSHIPS];
 
 int neighbourType = 0;
-// const char *neighbours[MAX_NEIGHBOUR_TYPES] = 
-// { "Moore", "Von Neumann", "Vertical", "Horizontal"};
-//int selectedNeighbourType = 0;
 
 Rectangle panelRec = { 0.5 * SCREEN_WIDTH - (DIALOG_VIEW_PERCENT * SCREEN_WIDTH) / 2, 0.6 * SCREEN_HEIGHT - (DIALOG_VIEW_PERCENT * SCREEN_HEIGHT) / 2, (DIALOG_VIEW_PERCENT * SCREEN_WIDTH), (DIALOG_VIEW_PERCENT * SCREEN_HEIGHT) };
 Rectangle panelContentRec = {0, 0, (DIALOG_CONTENT_PERC * SCREEN_WIDTH), (0.65 * SCREEN_HEIGHT) };
@@ -124,7 +121,7 @@ void AddCellType() {
 
 void HandleRunningMenuUI() {
     GuiControlState state = guiState;
-    bool pressed = false;
+    //bool pressed = false;
 
     if(selectedCellType != -1) {
 
@@ -556,7 +553,7 @@ void HandleEditCellUI() {
     for(int i = 0; i < MAX_RELATIONSHIPS; i++) {
         if(newTargetRelationShips[i].index > -1) {
             GuiControlState state = guiState;
-            bool pressed = false;
+            //bool pressed = false;
 
             Rectangle relationshipTypesRec = (Rectangle) {panelRec.x + panelRec.width * 0.027,
                 panelRec.y + panelScroll.y + (topSpace * (panelRec.height * 0.01)) + relationshipCounter * (relationShipSpaceSeparator * (panelRec.height * 0.01)),

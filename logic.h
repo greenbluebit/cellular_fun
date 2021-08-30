@@ -58,7 +58,7 @@ void HandleOpeningFile() {
 
 
     char *buf = malloc(fsize + 1);
-    size_t nread;
+    //size_t nread;
 
     if(buf == NULL) {
         // TEDO throw error for malloc fail
@@ -90,16 +90,9 @@ void HandleOpeningImage() {
                     prevDistance = distance;
                     currentIndex = i;
                 }
-                //free(&distance);
             }
             cells[x][y].cellTypeIndex = currentIndex;
             finalCells[x][y].cellTypeIndex = currentIndex;
-            // ((Color *)droppedImage.data)[y * droppedImage.width + x].r = GetRandomValue(0, ((Color *)droppedImage.data)[y * droppedImage.width + x].r);
-            // ((Color *)droppedImage.data)[y * droppedImage.width + x].g = GetRandomValue(0, ((Color *)droppedImage.data)[y * droppedImage.width + x].g);
-            // ((Color *)droppedImage.data)[y * droppedImage.width + x].b = GetRandomValue(0, ((Color *)droppedImage.data)[y * droppedImage.width + x].b);
-            
-            //free(&prevDistance);
-            //free(&currentIndex);
         }
     }
     strcpy(fileDialogState.fileNameText, "\0");
@@ -109,23 +102,11 @@ void HandleOpeningImage() {
     UnloadImage(droppedImage);    
 }
 
-// extern void WebOpenFile(char *file_path) {
-//     strcpy(fileNameToLoad, file_path);
-//     HandleOpeningFile();
-// }
-// extern void WebOpenImage(char *file_path) {
-//     strcpy(fileNameToLoad, file_path);
-//     droppedImage = LoadImage(fileNameToLoad);
-//     HandleOpeningImage(); 
-// }
 void Setup() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(active_width, active_height, "Cellular Fun");
 
     fileDialogState = InitGuiFileDialog(active_width / 2, active_height / 2, GetWorkingDirectory(), false);
-    char fileNameToLoad[512] = { 0 };
-    
-    //font = LoadFont("resources/fonts/setback.png"); // TEDO Not using this at all
 
     camera.target = (Vector2) { (active_width / 2) , (active_height / 2)};
     camera.offset = camera.target;
@@ -140,7 +121,6 @@ void Setup() {
     }
 
     SetExitKey(0); // This way I set the exit key. Atm, on Escape, it exits
-    //DisableCursor();
 
     #if defined(PLATFORM_WEB)
         emscripten_set_main_loop(Loop, 0, 1);
@@ -174,12 +154,6 @@ void Loop() {
             fileDialogState.fileDialogActive = false;
             CloseDialog(&fileDialogState);
         }
-        
-        // Hiding other UI elements
-        // if(isShowingUI == false) {
-        //     isShowingCreateCellTypeDialog = false;
-        //     fileDialogState.fileDialogActive = false;
-        // }
     }
 
     if(IsKeyPressed(KEY_KP_ADD)) {
@@ -367,7 +341,7 @@ void Loop() {
             }
             
         }
-        
+        fileDialogState.SelectFilePressed = false;
     }
     if(IsFileDropped()) {
         droppedFiles = GetDroppedFiles(&droppedFilesCount); // TEDO Count is irrelevant now, but I want to open multiple files at once, I'd bother with it.
@@ -481,8 +455,6 @@ void Loop() {
     GuiUnlock();
 
     GuiFileDialog(&fileDialogState);
-
-     //DrawTexture(LoadTextureFromImage(droppedImage), active_width / 2, active_height / 2, WHITE);
 
     EndDrawing();
 }
@@ -629,7 +601,7 @@ void HandleUI() {
             int backgroundPositionX = leftUIBackground.width / 2;
             int contentPositionX = backgroundPositionX - 55;
             GuiControlState state = guiState;
-            bool pressed = false;
+            //bool pressed = false;
             
             DrawRectanglePro(leftUIBackground, (Vector2) {backgroundPositionX, 0}, 0, Fade(LIGHTGRAY, uiTransparency));
             DrawRectangle(contentPositionX - 17,
@@ -690,10 +662,6 @@ void HandleUI() {
                 isFileImage = true;
                 fileDialogState.fileDialogActive = true;
             }
-            
-            // if(GuiButton((Rectangle) {contentPositionX, 0.72 * SCREEN_HEIGHT, 100, 20}, "Exit Application")) {
-            //     exit(0);
-            // }
 
             Rectangle exitApplicationRec = (Rectangle) {contentPositionX, (0.01 * active_height + 535), 0.01 * active_width + 100, 0.01 * active_height + 20};
             
