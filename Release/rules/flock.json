@@ -1,252 +1,462 @@
 {
 	"defaultcell":	0,
 	"celltypes":	[{
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	0,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	69,
-				"b":	124,
+				"r":	17,
+				"g":	24,
+				"b":	96,
 				"a":	255
 			},
 			"name":	"Off",
 			"targetcellrelationships":	[{
 					"targetindex":	1,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	100,
+					"relationshiptype_":	0,
 					"amount":	3,
 					"toamount":	0,
 					"index":	0,
-					"resultindex":	1
+					"resultindex":	1,
+					"bottomleft":	1,
+					"bottom":	1,
+					"bottomright":	1,
+					"right":	1,
+					"topright":	1,
+					"top":	1,
+					"topleft":	1,
+					"left":	1
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	100,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	100,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	204,
-				"g":	90,
+				"r":	191,
+				"g":	204,
 				"b":	38,
 				"a":	255
 			},
 			"name":	"On",
 			"targetcellrelationships":	[{
-					"targetindex":	1,
-					"relationshiptype":	0,
+					"targetindex":	0,
+					"comparisontype":	0,
+					"chance":	100,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	1
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	1,
-					"relationshiptype":	7,
+					"comparisontype":	7,
+					"chance":	100,
+					"relationshiptype_":	0,
 					"amount":	1,
 					"toamount":	2,
 					"index":	1,
-					"resultindex":	1
+					"resultindex":	1,
+					"bottomleft":	1,
+					"bottom":	1,
+					"bottomright":	1,
+					"right":	1,
+					"topright":	1,
+					"top":	1,
+					"topleft":	1,
+					"left":	1
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	6,
+					"comparisontype":	6,
+					"chance":	100,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	2,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	1,
+					"bottom":	1,
+					"bottomright":	1,
+					"right":	1,
+					"topright":	1,
+					"top":	1,
+					"topleft":	1,
+					"left":	1
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}, {
 					"targetindex":	0,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	0,
+					"relationshiptype_":	0,
 					"amount":	0,
 					"toamount":	0,
 					"index":	-1,
-					"resultindex":	0
+					"resultindex":	0,
+					"bottomleft":	0,
+					"bottom":	0,
+					"bottomright":	0,
+					"right":	0,
+					"topright":	0,
+					"top":	0,
+					"topleft":	0,
+					"left":	0
 				}]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]

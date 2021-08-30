@@ -77,6 +77,9 @@ int ParseJson(char *string) {
         jsonNeighbourType = cJSON_GetObjectItemCaseSensitive(jsonCellType, "neighbourtype");
         jsonColor = cJSON_GetObjectItemCaseSensitive(jsonCellType, "color");
         jsonIsImmovable = cJSON_GetObjectItemCaseSensitive(jsonCellType, "isimmovable");
+        if(jsonIndex->valueint == -1) {
+            continue;
+        }
         if(jsonIsImmovable != 0) {
             cellTypes[jsonIndex->valueint].isImmovable = jsonIsImmovable->valueint;
         } else {
@@ -134,6 +137,9 @@ int ParseJson(char *string) {
             jsonAmount = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "amount");
             jsonToAmount = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "toamount");
             jsonRelationshipIndex = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "index");
+            if(jsonRelationshipIndex->valueint == -1) {
+                continue;
+            }
             jsonResultIndex = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "resultindex");
             jsonChance = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "chance");
             jsonRelationshipType = cJSON_GetObjectItemCaseSensitive(jsonTargetRelationship, "relationshiptype_");
@@ -148,7 +154,7 @@ int ParseJson(char *string) {
                 } else {
                     cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->toAmount = 0;
                 }
-                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->index = jsonIndex->valueint;
+                cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->index = jsonRelationshipIndex->valueint;
                 cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->comparisonType = jsonComparisonType->valueint;
                 cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->resultCellTypeIndex = jsonResultIndex->valueint;
                 cellTypes[jsonIndex->valueint].targetCellRelationship[jsonRelationshipIndex->valueint]->targetCellTypeIndex = jsonTargetIndex->valueint;

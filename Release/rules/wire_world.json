@@ -1,8 +1,9 @@
 {
 	"defaultcell":	0,
 	"celltypes":	[{
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	0,
-			"neighbourtype":	0,
 			"color":	{
 				"r":	45,
 				"g":	33,
@@ -10,70 +11,11 @@
 				"a":	255
 			},
 			"name":	"Empty",
-			"targetcellrelationships":	[{
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}]
+			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	1,
-			"neighbourtype":	0,
 			"color":	{
 				"r":	25,
 				"g":	22,
@@ -83,68 +25,26 @@
 			"name":	"Head",
 			"targetcellrelationships":	[{
 					"targetindex":	1,
-					"relationshiptype":	6,
+					"comparisontype":	6,
+					"chance":	100,
+					"relationshiptype_":	0,
 					"amount":	0,
+					"toamount":	0,
 					"index":	0,
-					"resultindex":	2
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
+					"resultindex":	2,
+					"bottomleft":	1,
+					"bottom":	1,
+					"bottomright":	1,
+					"right":	1,
+					"topright":	1,
+					"top":	1,
+					"topleft":	1,
+					"left":	1
 				}]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	2,
-			"neighbourtype":	0,
 			"color":	{
 				"r":	122,
 				"g":	109,
@@ -154,68 +54,26 @@
 			"name":	"Tail",
 			"targetcellrelationships":	[{
 					"targetindex":	2,
-					"relationshiptype":	6,
+					"comparisontype":	6,
+					"chance":	100,
+					"relationshiptype_":	0,
 					"amount":	0,
+					"toamount":	0,
 					"index":	0,
-					"resultindex":	3
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
+					"resultindex":	3,
+					"bottomleft":	1,
+					"bottom":	1,
+					"bottomright":	1,
+					"right":	1,
+					"topright":	1,
+					"top":	1,
+					"topleft":	1,
+					"left":	1
 				}]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	3,
-			"neighbourtype":	0,
 			"color":	{
 				"r":	249,
 				"g":	150,
@@ -225,128 +83,108 @@
 			"name":	"Connector",
 			"targetcellrelationships":	[{
 					"targetindex":	1,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	100,
+					"relationshiptype_":	0,
 					"amount":	1,
+					"toamount":	0,
 					"index":	0,
-					"resultindex":	1
+					"resultindex":	1,
+					"bottomleft":	1,
+					"bottom":	1,
+					"bottomright":	1,
+					"right":	1,
+					"topright":	1,
+					"top":	1,
+					"topleft":	1,
+					"left":	1
 				}, {
 					"targetindex":	1,
-					"relationshiptype":	0,
+					"comparisontype":	0,
+					"chance":	100,
+					"relationshiptype_":	0,
 					"amount":	2,
+					"toamount":	0,
 					"index":	1,
-					"resultindex":	1
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
-				}, {
-					"targetindex":	0,
-					"relationshiptype":	0,
-					"amount":	0,
-					"index":	-1,
-					"resultindex":	0
+					"resultindex":	1,
+					"bottomleft":	1,
+					"bottom":	1,
+					"bottomright":	1,
+					"right":	1,
+					"topright":	1,
+					"top":	1,
+					"topleft":	1,
+					"left":	1
 				}]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]
 		}, {
+			"isimmovable":	0,
+			"ismaintainingvelocity":	0,
 			"index":	-1,
-			"neighbourtype":	0,
 			"color":	{
-				"r":	0,
-				"g":	0,
-				"b":	0,
-				"a":	0
+				"r":	204,
+				"g":	210,
+				"b":	221,
+				"a":	255
 			},
 			"name":	"Unset",
 			"targetcellrelationships":	[]

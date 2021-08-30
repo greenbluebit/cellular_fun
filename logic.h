@@ -150,6 +150,7 @@ void Loop() {
     if(IsKeyPressed(KEY_ESCAPE)) {
         isShowingUI = !isShowingUI;
         isCinematic = false;
+        isShowingCreateCellTypeDialog = false;
         if(fileDialogState.fileDialogActive) {
             fileDialogState.fileDialogActive = false;
             CloseDialog(&fileDialogState);

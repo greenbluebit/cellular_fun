@@ -421,6 +421,7 @@ void HandleRunningMenuUI() {
 
     if(GuiButton((Rectangle) {0.95 * active_width, 0.95 * active_height, 0.04 * active_width, 0.01 * active_height + 20}, isShowingUI == false ? "Pause" : "Resume")) {
         isShowingUI = !isShowingUI;
+        isShowingCreateCellTypeDialog = false;
     }
 }
 
