@@ -216,11 +216,32 @@ GuiFileDialogState InitGuiFileDialog(int width, int height, const char *initPath
 // Read files in new path
 static void FD_RELOAD_DIRPATH(GuiFileDialogState *state)
 {
-    for (int i = 0; i < state->dirFilesCount; i++) RL_FREE(state->dirFiles[i]);
+    for (int i = 0; i < MAX_DIRECTORY_FILES; i++)
+    {
+        if(state->dirFiles != NULL && state->dirFiles[i] != NULL) RL_FREE(state->dirFiles[i]);
+    }
+
     RL_FREE(state->dirFiles);
+
+    state->dirFiles = NULL;
 
     state->dirFiles = ReadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
     state->itemFocused = 0;
+}
+
+void CloseDialog(GuiFileDialogState *state) {
+    // RL_FREE dirFiles memory
+    for (int i = 0; i < MAX_DIRECTORY_FILES; i++)
+    {
+        if(state->dirFiles != NULL && state->dirFiles[i] != NULL) RL_FREE(state->dirFiles[i]);
+        if(dirFilesIcon != NULL && dirFilesIcon[i] != NULL) RL_FREE(dirFilesIcon[i]);
+    }
+
+    RL_FREE(state->dirFiles);
+    RL_FREE(dirFilesIcon);
+
+    dirFilesIcon = NULL;
+    state->dirFiles = NULL;
 }
 
 // Update and draw file dialog
@@ -377,20 +398,9 @@ void GuiFileDialog(GuiFileDialogState *state)
 #endif
 
         // File dialog has been closed!
-        if (!state->fileDialogActive)
+        if (state->fileDialogActive == false)
         {
-            // RL_FREE dirFiles memory
-            for (int i = 0; i < state->dirFilesCount; i++)
-            {
-                RL_FREE(state->dirFiles[i]);
-                RL_FREE(dirFilesIcon[i]);
-            }
-
-            RL_FREE(state->dirFiles);
-            RL_FREE(dirFilesIcon);
-
-            dirFilesIcon = NULL;
-            state->dirFiles = NULL;
+            CloseDialog(state);
         }
     }
 }

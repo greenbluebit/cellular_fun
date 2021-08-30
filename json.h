@@ -5,6 +5,8 @@ int ParseJson(char *string) {
     int status = 0;
     cJSON *parent = cJSON_Parse(string);
     cJSON *jsonDefaultCell = NULL;
+    cJSON *jsonIsImmovable = NULL;
+    cJSON *jsonIsMaintainingVelocity = NULL;
     cJSON *jsonCellTypes = NULL;
     cJSON *jsonCellType = NULL;
     cJSON *jsonIndex = NULL;
@@ -51,11 +53,12 @@ int ParseJson(char *string) {
         selectedCellType = defaultCell;
         for(int x = 0; x < MAX_CELLS_X; x++) {
             for(int y = 0; y < MAX_CELLS_Y; y++) {
-                finalCells[x][y] = defaultCell;
-                cells[x][y] = defaultCell;
+                finalCells[x][y].cellTypeIndex = defaultCell;
+                cells[x][y].cellTypeIndex = defaultCell;
             }
         }
     }
+    
     
 
     for(int i = 0; i < MAX_CELLTYPES; i++) {
@@ -73,6 +76,20 @@ int ParseJson(char *string) {
         jsonIndex = cJSON_GetObjectItemCaseSensitive(jsonCellType, "index");
         jsonNeighbourType = cJSON_GetObjectItemCaseSensitive(jsonCellType, "neighbourtype");
         jsonColor = cJSON_GetObjectItemCaseSensitive(jsonCellType, "color");
+        jsonIsImmovable = cJSON_GetObjectItemCaseSensitive(jsonCellType, "isimmovable");
+        if(jsonIsImmovable != NULL) {
+            cellTypes[jsonIndex->valueint].isImmovable = jsonIsImmovable->valueint;
+        } else {
+            cellTypes[jsonIndex->valueint].isImmovable = 0; // TEDO I might not need this
+        }
+        jsonIsMaintainingVelocity = cJSON_GetObjectItemCaseSensitive(jsonCellType, "ismaintainingvelocity");
+        if(jsonIsMaintainingVelocity != NULL) {
+            cellTypes[jsonIndex->valueint].isMaintainingVelocity = jsonIsMaintainingVelocity->valueint;
+        } else {
+            cellTypes[jsonIndex->valueint].isMaintainingVelocity = 0;
+        }
+
+        jsonIsMaintainingVelocity = NULL;
 
         if(jsonColor == NULL) {
             const char *error_ptr = cJSON_GetErrorPtr();
@@ -218,6 +235,8 @@ char *PrintJson() {
     cJSON *jsonDefaultCell = NULL;
     cJSON *jsonCellTypes = NULL;
     cJSON *jsonCellType = NULL;
+    cJSON *jsonIsImmovable = NULL;
+    cJSON *jsonIsMaintainingVelocity = NULL;
     cJSON *jsonIndex = NULL;
     cJSON *jsonColor = NULL;
     cJSON *jsonR = NULL;
@@ -261,6 +280,12 @@ char *PrintJson() {
             goto end;
         }
         cJSON_AddItemToArray(jsonCellTypes, jsonCellType);
+
+        jsonIsImmovable = cJSON_CreateNumber(cellTypes[i].isImmovable);
+        cJSON_AddItemToObject(jsonCellType, "isimmovable", jsonIsImmovable);
+
+        jsonIsMaintainingVelocity = cJSON_CreateNumber(cellTypes[i].isMaintainingVelocity);
+        cJSON_AddItemToObject(jsonCellType, "ismaintainingvelocity", jsonIsMaintainingVelocity);
 
         jsonIndex = cJSON_CreateNumber(cellTypes[i].index);
         cJSON_AddItemToObject(jsonCellType, "index", jsonIndex);

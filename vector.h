@@ -1,4 +1,4 @@
-#define VECTOR_INIT_CAPACITY 260 * 125
+#define VECTOR_INIT_CAPACITY MAX_CELLS_X * MAX_CELLS_Y
 #define UNDEFINE  -1
 #define SUCCESS 0
 
@@ -161,9 +161,9 @@ int vectorFree(vector *v)
         //     }
             
         // }
-        //free(v->vectorList.items);
-        //v->vectorList.items = NULL;
-        status = SUCCESS;
+        free(v->vectorList.items);
+        v->vectorList.items = NULL;
+        status = SUCCESS; 
     }
     return status;
 }

@@ -7,6 +7,7 @@
 #include "raylib.h"
 #include "utils.h"
 #include <time.h>
+#include "float.h"
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -29,6 +30,12 @@
 struct CellType;
 struct TargetCellRelationship;
 
+struct Cell {
+    int cellTypeIndex;
+    int velX;
+    int velY;
+} T_Cell;
+
 struct FromTo {
     int cellX;
     int cellY;
@@ -44,7 +51,8 @@ struct CellType {
     char name[MAX_NAME_LENGTH + 1];
     struct TargetCellRelationship *targetCellRelationship[MAX_RELATIONSHIPS];
     int lookDistance;
-    int immovable;
+    int isImmovable;
+    int isMaintainingVelocity;
 } T_CellType;
 
 // comparisonType

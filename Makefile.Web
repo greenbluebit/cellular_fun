@@ -251,7 +251,7 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
     # --source-map-base          # allow debugging in browser with source map
     # tedo I need this:  --preload-file resources if I add songs or anything else
     # info from here https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)
-    CFLAGS += -s USE_GLFW=3 -s TOTAL_MEMORY=67108864 -s FORCE_FILESYSTEM=1
+    CFLAGS += -s USE_GLFW=3 -s TOTAL_MEMORY=256MB -s FORCE_FILESYSTEM=1
 
     # Define a custom shell .html and output extension
     CFLAGS += --shell-file $(RAYLIB_PATH)/src/shell.html

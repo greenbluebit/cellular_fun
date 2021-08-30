@@ -4,21 +4,26 @@
 #include "json.h"
 
 
-#define MOVE_SPEED          10
-#define FAST_MOVE_SPEED     20
+#define MOVE_SPEED          15
+#define FAST_MOVE_SPEED     25
+#define ZOOM_SPEED          0.1f
 
 #define CELL_SIZE               4
 #define CELL_SEPARATION         1
 #define TARGET_FPS              60
 
 #define MAX_CAMERA_ZOOM         4.5f // zoom in
-#define MIN_CAMERA_ZOOM         1.1f // zoom out
+#define MIN_CAMERA_ZOOM         0.8f // zoom out
 
 
 GuiFileDialogState fileDialogState;
 char fileNameToLoad[512] = { 0 };
+char **droppedFiles = { 0 };
+int droppedFilesCount = 0;
 FILE *fp;
 bool isSavingFile = false;
+bool isFileImage = false;
+Image droppedImage;
 
 bool isMovingFast = false;
 bool isMousePressed = false;
@@ -27,7 +32,7 @@ int lastMouseY = -1;
 
 Camera2D camera = { 0 };
 
-Font font;
+//Font font;
 
 int testSize = 0;
 
@@ -36,9 +41,83 @@ void UpdateMyCamera();
 void HandleUI();
 void Loop();
 void ApplyMouseClick(int mouseX, int mouseY);
+int GetDistanceBetweenColors(Color c1, Color c2) {
+    float point1 = (c1.r - c2.r) * (c1.r - c2.r);
+    float point2 = (c1.g - c2.g) * (c1.g - c2.g);
+    float point3 = (c1.b - c2.b) * (c1.b - c2.b);
+    float point4 = (c1.a - c2.a) * (c1.a - c2.a);
+    return sqrtf(point1 + point2 + point3 + point4);
 
 
+}
+void HandleOpeningFile() {
+    fp = fopen(fileNameToLoad, "r");
+    fseek(fp, 0, SEEK_END);
+    long fsize = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
 
+
+    char *buf = malloc(fsize + 1);
+    size_t nread;
+
+    if(buf == NULL) {
+        // TEDO throw error for malloc fail
+    }
+
+    fread(buf, 1, fsize, fp);
+    ParseJson(buf);
+    
+    strcpy(fileDialogState.fileNameText, "\0");
+    strcpy(fileDialogState.fileNameTextCopy, fileDialogState.fileNameText);
+    fileDialogState.filesListActive = -1;
+    fileDialogState.prevFilesListActive = fileDialogState.filesListActive;
+    fclose(fp);
+}
+void HandleOpeningImage() {
+    for(int y = 0; y < droppedImage.height; y++) {
+        if(y >= MAX_CELLS_Y) {
+            break;
+        }
+        for(int x = 0; x < droppedImage.width; x++) {
+            if(x >= MAX_CELLS_X) {
+                continue;
+            }
+            float prevDistance = -1;
+            int currentIndex = 0;
+            for(int i = 0; i < MAX_CELLTYPES; i++) {
+                float distance = GetDistanceBetweenColors(((Color *)droppedImage.data)[y * droppedImage.width + x], cellTypes[i].color);
+                if(prevDistance == -1 || distance < prevDistance) {
+                    prevDistance = distance;
+                    currentIndex = i;
+                }
+                //free(&distance);
+            }
+            cells[x][y].cellTypeIndex = currentIndex;
+            finalCells[x][y].cellTypeIndex = currentIndex;
+            // ((Color *)droppedImage.data)[y * droppedImage.width + x].r = GetRandomValue(0, ((Color *)droppedImage.data)[y * droppedImage.width + x].r);
+            // ((Color *)droppedImage.data)[y * droppedImage.width + x].g = GetRandomValue(0, ((Color *)droppedImage.data)[y * droppedImage.width + x].g);
+            // ((Color *)droppedImage.data)[y * droppedImage.width + x].b = GetRandomValue(0, ((Color *)droppedImage.data)[y * droppedImage.width + x].b);
+            
+            //free(&prevDistance);
+            //free(&currentIndex);
+        }
+    }
+    strcpy(fileDialogState.fileNameText, "\0");
+    strcpy(fileDialogState.fileNameTextCopy, fileDialogState.fileNameText);
+    fileDialogState.filesListActive = -1;
+    fileDialogState.prevFilesListActive = fileDialogState.filesListActive;
+    UnloadImage(droppedImage);    
+}
+
+// extern void WebOpenFile(char *file_path) {
+//     strcpy(fileNameToLoad, file_path);
+//     HandleOpeningFile();
+// }
+// extern void WebOpenImage(char *file_path) {
+//     strcpy(fileNameToLoad, file_path);
+//     droppedImage = LoadImage(fileNameToLoad);
+//     HandleOpeningImage(); 
+// }
 void Setup() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(active_width, active_height, "Cellular Fun");
@@ -46,7 +125,7 @@ void Setup() {
     fileDialogState = InitGuiFileDialog(active_width / 2, active_height / 2, GetWorkingDirectory(), false);
     char fileNameToLoad[512] = { 0 };
     
-    font = LoadFont("resources/fonts/setback.png"); // TEDO Not using this at all
+    //font = LoadFont("resources/fonts/setback.png"); // TEDO Not using this at all
 
     camera.target = (Vector2) { (active_width / 2) , (active_height / 2)};
     camera.offset = camera.target;
@@ -91,9 +170,44 @@ void Loop() {
     if(IsKeyPressed(KEY_ESCAPE)) {
         isShowingUI = !isShowingUI;
         isCinematic = false;
+        if(fileDialogState.fileDialogActive) {
+            fileDialogState.fileDialogActive = false;
+            CloseDialog(&fileDialogState);
+        }
+        
         // Hiding other UI elements
-        if(isShowingUI == false) {
-            isShowingCreateCellTypeDialog = false;
+        // if(isShowingUI == false) {
+        //     isShowingCreateCellTypeDialog = false;
+        //     fileDialogState.fileDialogActive = false;
+        // }
+    }
+
+    if(IsKeyPressed(KEY_KP_ADD)) {
+        if(generationSpeedMultiplier >= MAX_GENERATION_SPEED_MULTIPLIER) {
+            generationSpeedMultiplier = MIN_GENERATION_SPEED_MULTIPLIER;
+        } else {
+            generationSpeedMultiplier++;
+        }
+    }
+    if(IsKeyPressed(KEY_KP_SUBTRACT)) {
+        if(generationSpeedMultiplier <= 0) {
+            generationSpeedMultiplier = MAX_GENERATION_SPEED_MULTIPLIER;
+        } else {
+            generationSpeedMultiplier--;
+        }
+    }
+    if(IsKeyPressed(KEY_PAGE_UP)) {
+        if(brushSize >= MAX_BRUSH_SIZE) {
+            brushSize = MIN_BRUSH_SIZE;
+        } else {
+            brushSize++;
+        }
+    }
+    if(IsKeyPressed(KEY_PAGE_DOWN)) {
+        if(brushSize <= 0) {
+            brushSize = MAX_BRUSH_SIZE;
+        } else {
+            brushSize--;
         }
     }
 
@@ -167,7 +281,6 @@ void Loop() {
     {        
         if (IsWindowFullscreen())
         {
-            // if we are full screen, then go back to the windowed size
             SetWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
             active_width = GetMonitorWidth(display);
             active_height = GetMonitorHeight(display);
@@ -175,14 +288,12 @@ void Loop() {
         }
         else
         {
-            // if we are not full screen, set the window size to match the monitor we are on
             SetWindowSize(GetMonitorWidth(display), GetMonitorHeight(display));
             active_width = GetMonitorWidth(display);
             active_height = GetMonitorHeight(display);
             
         }
 
-        // toggle the state
         ToggleFullscreen();
     }
 
@@ -194,10 +305,10 @@ void Loop() {
     }
 
     if(fileDialogState.SelectFilePressed) {
-        if(IsFileExtension(fileDialogState.fileNameText, ".json")) {
-            if(isSavingFile) {
+        if(isSavingFile) {
+            if(isFileImage == false && IsFileExtension(fileDialogState.fileNameText, ".json")) {
                 strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
-                fp = fopen(fileNameToLoad, "w");
+                fp = fopen(fileNameToLoad, "wb");
 
                 if(fp == NULL) {
                     fprintf(stderr, "Failed to open file. \n"); // TEDO Add file name
@@ -210,32 +321,72 @@ void Loop() {
                 fileDialogState.filesListActive = -1;
                 fileDialogState.prevFilesListActive = fileDialogState.filesListActive;
                 fclose(fp);
-            } else {
+            } else if (isFileImage == true && (IsFileExtension(fileDialogState.fileNameText, ".png")
+            || IsFileExtension(fileDialogState.fileNameText, ".jpg")
+            || IsFileExtension(fileDialogState.fileNameText, ".jpeg")
+            || IsFileExtension(fileDialogState.fileNameText, ".bmp"))) {
                 strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
-                fp = fopen(fileNameToLoad, "r");
+                //fp = fopen(fileNameToLoad, "wb");
+                Color *pixels = (Color *) malloc(MAX_CELLS_X * MAX_CELLS_Y * sizeof(Color));
 
-                fseek(fp, 0, SEEK_END);
-                long fsize = ftell(fp);
-                fseek(fp, 0, SEEK_SET);
-
-
-                char *buf = malloc(fsize + 1);
-                size_t nread;
-
-                if(buf == NULL) {
-                    // TEDO throw error for malloc fail
+                for(int y = 0; y < MAX_CELLS_Y; y++) {
+                    
+                    for(int x = 0; x < MAX_CELLS_X; x++) {
+                        pixels[MAX_CELLS_X * y + x].r = cellTypes[cells[x][y].cellTypeIndex].color.r;
+                        pixels[MAX_CELLS_X * y + x].g = cellTypes[cells[x][y].cellTypeIndex].color.g;
+                        pixels[MAX_CELLS_X * y + x].b = cellTypes[cells[x][y].cellTypeIndex].color.b;
+                        pixels[MAX_CELLS_X * y + x].a = cellTypes[cells[x][y].cellTypeIndex].color.a;
+                        
+                    }
                 }
-
-                fread(buf, 1, fsize, fp);
-                ParseJson(buf);
-                
+                Image checkedIm = {
+                    .data = pixels,             // We can assign pixels directly to data
+                    .width = MAX_CELLS_X,
+                    .height = MAX_CELLS_Y,
+                    .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,
+                    .mipmaps = 1
+                };
+                ExportImage(checkedIm, fileNameToLoad);
                 strcpy(fileDialogState.fileNameText, "\0");
                 strcpy(fileDialogState.fileNameTextCopy, fileDialogState.fileNameText);
                 fileDialogState.filesListActive = -1;
                 fileDialogState.prevFilesListActive = fileDialogState.filesListActive;
-                fclose(fp);
+                free(pixels);
+                UnloadImage(checkedIm);
+                //fclose(fp);
             }
+            
+        } else {
+            if(isFileImage == false && IsFileExtension(fileDialogState.fileNameText, ".json")) {
+                strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
+                HandleOpeningFile();
+            } else if (isFileImage == true) {
+                strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
+                droppedImage = LoadImage(fileNameToLoad);
+                HandleOpeningImage();               
+            }
+            
         }
+        
+    }
+    if(IsFileDropped()) {
+        droppedFiles = GetDroppedFiles(&droppedFilesCount); // TEDO Count is irrelevant now, but I want to open multiple files at once, I'd bother with it.
+        strcpy(fileNameToLoad, droppedFiles[0]);
+
+        if(IsFileExtension(droppedFiles[0], ".json")) {
+            HandleOpeningFile();
+        } else if (IsFileExtension(droppedFiles[0], ".png")
+            || IsFileExtension(droppedFiles[0], ".jpg")
+            || IsFileExtension(droppedFiles[0], ".jpeg")
+            || IsFileExtension(droppedFiles[0], ".bmp")) {
+            droppedImage = LoadImage(droppedFiles[0]);
+            
+            HandleOpeningImage();
+
+            
+        }
+        
+        ClearDroppedFiles();
     }
 
     // Handle Cell Interaction
@@ -249,15 +400,25 @@ void Loop() {
 
         // lastMouseX ; lastMouseY
 
-        if(mouseX >= 0 && mouseX < MAX_CELLS_X) {
+        if(mouseX >= 0 && mouseX < MAX_CELLS_X && mouseY >= 0 && mouseY < MAX_CELLS_Y) {
+            ApplyMouseClick(mouseX, mouseY);
+        } else {
+            lastMouseX = -1;
+            lastMouseY = -1;
+        }
+        isMousePressed = true;
+    } else {
+        int mouseX = (mouseToWorldPosition.x) / (CELL_SIZE + CELL_SEPARATION);
+        int mouseY = (mouseToWorldPosition.y) / (CELL_SIZE + CELL_SEPARATION);
+        if(isMousePressed == true && mouseX >= 0 && mouseX < MAX_CELLS_X) {
             if(mouseY >= 0 && mouseY < MAX_CELLS_Y) {
+                isMousePressed = false;
                 ApplyMouseClick(mouseX, mouseY);
                 
             }
         }
-        isMousePressed = true;
-    } else {
         isMousePressed = false;
+        
     }
 
     
@@ -271,7 +432,7 @@ void Loop() {
 
     for(int x = 0; x < MAX_CELLS_X; x++) {
         for(int y = 0; y < MAX_CELLS_Y; y++) {
-            finalCells[x][y] = cells[x][y];
+            finalCells[x][y].cellTypeIndex = cells[x][y].cellTypeIndex;
         }
     }
 
@@ -282,29 +443,18 @@ void Loop() {
     
     BeginDrawing();
     
-    ClearBackground(GRAY);
+    ClearBackground((Color) {46, 55, 71, 255});
     
 
     BeginMode2D(camera);
-    //DrawRectangle(-10,-10, ((CELL_SIZE + CELL_SEPARATION) * (selfActualizing ? MAX_CELLS_X : PHYSICS_MAX_CELLS_X)) + 20, ((CELL_SIZE + CELL_SEPARATION) * (selfActualizing ? MAX_CELLS_Y : PHYSICS_MAX_CELLS_Y)) + 20, BLACK);
     DrawRectangle(-10,-10, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) + 20, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) + 20, BLACK);
     
     for(int x = 0; x < MAX_CELLS_X; x++) {
         for(int y = 0; y < MAX_CELLS_Y; y++) {
-            DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
+            DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y].cellTypeIndex].color);
             testSize += CELL_SIZE;
         }
     }
-    // if(selfActualizing == true) {
-        
-    // } else {
-    //     // for(int x = 0; x < PHYSICS_MAX_CELLS_X; x++) {
-    //     //     for(int y = 0; y < PHYSICS_MAX_CELLS_Y; y++) {
-    //     //         DrawRectangleV((Vector2) {CELL_SIZE / 2 + CELL_SEPARATION * x + CELL_SIZE * x, CELL_SIZE / 2 + CELL_SEPARATION * y + CELL_SIZE * y}, (Vector2) {CELL_SIZE, CELL_SIZE}, cellTypes[cells[x][y]].color);
-    //     //         testSize += CELL_SIZE;
-    //     //     }
-    //     // }
-    // }
     
 
     if(isShowingUI == false) {
@@ -332,32 +482,41 @@ void Loop() {
 
     GuiFileDialog(&fileDialogState);
 
+     //DrawTexture(LoadTextureFromImage(droppedImage), active_width / 2, active_height / 2, WHITE);
+
     EndDrawing();
 }
 
 void DoCellChange(int cellX, int cellY) {
-    cells[cellX][cellY] = selectedCellType;
-    finalCells[cellX][cellY] = cells[cellX][cellY];
+    if(cellX >= 0 && cellX < MAX_CELLS_X) {
+        if(cellY >= 0 && cellY < MAX_CELLS_Y) {
+            cells[cellX][cellY].cellTypeIndex = selectedCellType;
+            finalCells[cellX][cellY].cellTypeIndex = cells[cellX][cellY].cellTypeIndex;
 
-    for(int neighbourX = cellX - brushSize; neighbourX <= cellX + brushSize; neighbourX++) {
-        for(int neighbourY = cellY - brushSize; neighbourY <= cellY + brushSize; neighbourY++) {
-            if(neighbourX >= 0 && neighbourX < MAX_CELLS_X && neighbourY >= 0 && neighbourY < MAX_CELLS_Y) {
-                if((neighbourX != cellX || neighbourY != cellY)) {
-                    cells[neighbourX][neighbourY] = selectedCellType;
-                    finalCells[neighbourX][neighbourY] = cells[neighbourX][neighbourY];
+            for(int neighbourX = cellX - brushSize; neighbourX <= cellX + brushSize; neighbourX++) {
+                for(int neighbourY = cellY - brushSize; neighbourY <= cellY + brushSize; neighbourY++) {
+                    if(neighbourX >= 0 && neighbourX < MAX_CELLS_X && neighbourY >= 0 && neighbourY < MAX_CELLS_Y) {
+                        if((neighbourX != cellX || neighbourY != cellY)) {
+                            cells[neighbourX][neighbourY].cellTypeIndex = selectedCellType;
+                            finalCells[neighbourX][neighbourY].cellTypeIndex = cells[neighbourX][neighbourY].cellTypeIndex;
+                        }
+                    }
                 }
             }
         }
-    }
+    }    
 }
 
 void ApplyMouseClick(int mouseX, int mouseY) {
-    if(isMousePressed == false) {
+    if(isMousePressed == false || (lastMouseX == -1 || lastMouseY == -1)) {
         DoCellChange(mouseX, mouseY);
     } else {
         if(lastMouseX == mouseX && lastMouseY == mouseY) {
-            cells[mouseX][mouseY] = selectedCellType;
-            finalCells[mouseX][lastMouseY] = cells[mouseX][mouseY];
+            if(mouseX >= 0 && mouseX < MAX_CELLS_X) {
+                if(mouseY >= 0 && mouseY < MAX_CELLS_Y) {
+                    DoCellChange(mouseX, mouseY);
+                }
+            }
         }
         int xDiff = lastMouseX - mouseX;
         int yDiff = lastMouseY - mouseY;
@@ -392,9 +551,6 @@ void ApplyMouseClick(int mouseX, int mouseY) {
                 }
             }
         }
-        
-
-        
     }
 
     lastMouseX = mouseX;
@@ -419,7 +575,12 @@ void UpdateMyCamera() {
         camera.target.y += (isMovingFast) ? FAST_MOVE_SPEED : MOVE_SPEED;
     }
 
-    camera.zoom += ((float)GetMouseWheelMove()*0.05f);
+    #if defined(PLATFORM_WEB)
+        camera.zoom -= ((float)GetMouseWheelMove()*ZOOM_SPEED);
+    #else
+        camera.zoom += ((float)GetMouseWheelMove()*ZOOM_SPEED);
+    #endif
+    
 
     if (camera.zoom > MAX_CAMERA_ZOOM) camera.zoom = MAX_CAMERA_ZOOM;
     else if (camera.zoom < MIN_CAMERA_ZOOM) camera.zoom = MIN_CAMERA_ZOOM;
@@ -464,71 +625,96 @@ void HandleUI() {
         if(isUIAnimationFinished == false) {
             AnimateOpeningMenu();
         } else {
+            leftUIBackground.x = leftUIBackground.width / 2;
             int backgroundPositionX = leftUIBackground.width / 2;
             int contentPositionX = backgroundPositionX - 55;
+            GuiControlState state = guiState;
+            bool pressed = false;
             
             DrawRectanglePro(leftUIBackground, (Vector2) {backgroundPositionX, 0}, 0, Fade(LIGHTGRAY, uiTransparency));
-            DrawRectangle(contentPositionX - 15, 20, 125, 125, WHITE);
-            DrawRectangleLines(contentPositionX - 15, 20, 125, 125, BLACK);
+            DrawRectangle(contentPositionX - 17,
+             (0.01 * active_height + 20),
+              0.01 * active_width + 125,
+               0.01 * active_height + 125, WHITE);
+            DrawRectangleLines(contentPositionX - 17,
+             (0.01 * active_height + 20),
+              0.01 * active_width + 125,
+               0.01 * active_height + 125, BLACK);
             
-            DrawRectangle(contentPositionX - 7, 150, 110, 25, WHITE);
-            DrawRectangleLines(contentPositionX - 7, 150, 110, 25, BLACK);
+            DrawRectangle(contentPositionX - 8,
+             (0.01 * active_height + 160),
+              0.01 * active_width + 110,
+               0.01 * active_height + 25, WHITE);
+            DrawRectangleLines(contentPositionX - 8,
+             (0.01 * active_height + 160),
+              0.01 * active_width + 110,
+               0.01 * active_height + 25, BLACK);
             
-            DrawText("Cellular Fun", contentPositionX + 11, 156, 12, BLACK);
+            DrawText("Cellular Fun", contentPositionX + 17, (0.01 * active_height + 172), 14, BLACK);
 
-            DrawRectangle(contentPositionX + 10, 180, 70, 25, WHITE);
-            DrawRectangleLines(contentPositionX + 10, 180, 70, 25, BLACK);
+            DrawRectangle(contentPositionX,
+             (0.01 * active_height + 200),
+              0.01 * active_width + 95,
+               0.01 * active_height + 25, WHITE);
+            DrawRectangleLines(contentPositionX,
+             (0.01 * active_height + 200),
+              0.01 * active_width + 95,
+               0.01 * active_height + 25, BLACK);
             
-            DrawText("by Ted", contentPositionX + 26, 186, 12, BLACK);
-            if(GuiButton((Rectangle) {contentPositionX, 0.62 * SCREEN_HEIGHT, 100, 20}, "Add Cell Type")) {
-                textBoxSelected = false;
-                isShowingCreateCellTypeDialog = true;
-                //if(selectedIndex == -1) { // TEDO remove this if
-                    for(int i = 0; i < MAX_CELLTYPES; i++) {
-                        if(cellTypes[i].index == -1) {
-                            selectedIndex = i;
-                            break;
-                        }
-                    }
-                //}
-                selectedColor = WHITE;
-                //selectedNeighbourType = 0;
-                letterCount = 0;
-                isDefault = 0;
-                isImmovable = 0;
-                for(int i = 0; i < MAX_NAME_LENGTH; i++) {
-                    cellName[i] = '\0';
-                }
-                for(int i = 0; i < MAX_RELATIONSHIPS; i++) {
-                    newTargetRelationShips[i].index = -1;
-                    newTargetRelationShips[i].amount = 0;
-                    newTargetRelationShips[i].comparisonType = 0;
-                    newTargetRelationShips[i].resultCellTypeIndex = 0;
-                    newTargetRelationShips[i].targetCellTypeIndex = 0;
-                    newTargetRelationShips[i].chance = MIN_CHANCE;
-                    newTargetRelationShips[i].relationshipType = 0;
+            DrawText("by Ted", contentPositionX + 33,
+             (0.01 * active_height + 212),
+              12, BLACK);
 
-                    newTargetRelationShips[i].bottomLeft = 0;
-                    newTargetRelationShips[i].bottom = 0;
-                    newTargetRelationShips[i].bottomRight = 0;
-                    newTargetRelationShips[i].right = 0;
-                    newTargetRelationShips[i].topRight = 0;
-                    newTargetRelationShips[i].top = 0;
-                    newTargetRelationShips[i].topLeft = 0;
-                    newTargetRelationShips[i].left = 0;
-                }
-            }
-            if(GuiButton((Rectangle) {contentPositionX, 0.66 * SCREEN_HEIGHT, 100, 20}, "Save Rule")) {
+            DrawText("Rules", contentPositionX,
+             (0.01 * active_height + 330),
+              12, BLACK);
+            if(GuiButton((Rectangle) {contentPositionX, (0.01 * active_height + 345), 0.01 * active_width + 100, 0.01 * active_height + 20}, "Save")) {
                 isSavingFile = true;
+                isFileImage = false;
                 fileDialogState.fileDialogActive = true;
             }
-            if(GuiButton((Rectangle) {contentPositionX, 0.70 * SCREEN_HEIGHT, 100, 20}, "Load Rule")) {
+            if(GuiButton((Rectangle) {contentPositionX, (0.01 * active_height + 380), 0.01 * active_width + 100, 0.01 * active_height + 20}, "Load")) {
                 isSavingFile = false;
+                isFileImage = false;
                 fileDialogState.fileDialogActive = true;
             }
-            if(GuiButton((Rectangle) {contentPositionX, 0.74 * SCREEN_HEIGHT, 100, 20}, "Exit Application")) {
-                exit(0);
+
+            DrawText("Images", contentPositionX, (0.01 * active_height + 430), 12, BLACK);
+            if(GuiButton((Rectangle) {contentPositionX, (0.01 * active_height + 445), 0.01 * active_width + 100, 0.01 * active_height + 20}, "Save")) {
+                isSavingFile = true;
+                isFileImage = true;
+                fileDialogState.fileDialogActive = true;
             }
+            if(GuiButton((Rectangle) {contentPositionX, (0.01 * active_height + 480), 0.01 * active_width + 100, 0.01 * active_height + 20}, "Load")) {
+                isSavingFile = false;
+                isFileImage = true;
+                fileDialogState.fileDialogActive = true;
+            }
+            
+            // if(GuiButton((Rectangle) {contentPositionX, 0.72 * SCREEN_HEIGHT, 100, 20}, "Exit Application")) {
+            //     exit(0);
+            // }
+
+            Rectangle exitApplicationRec = (Rectangle) {contentPositionX, (0.01 * active_height + 535), 0.01 * active_width + 100, 0.01 * active_height + 20};
+            
+            if ((state != GUI_STATE_DISABLED) && !guiLocked)
+            {
+                Vector2 mousePoint = GetMousePosition();
+                if (CheckCollisionPointRec(mousePoint, exitApplicationRec))
+                {
+                    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = GUI_STATE_PRESSED;
+                    else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) state = GUI_STATE_PRESSED;
+                    else state = GUI_STATE_FOCUSED;
+
+                    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+                         exit(0);
+                    }
+                }
+            }
+            
+            GuiDrawRectangle(exitApplicationRec, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GRAY, guiAlpha), Fade(state == GUI_STATE_FOCUSED ? (Color) {193, 92, 92, 255} : (Color) {168, 62, 62, 255}, guiAlpha));
+            GuiDrawText("Exit", GetTextBounds(BUTTON, exitApplicationRec), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(WHITE, guiAlpha));
+            state = GUI_STATE_NORMAL;
         }
         
         // new cell type UI
