@@ -663,26 +663,29 @@ void HandleUI() {
                 fileDialogState.fileDialogActive = true;
             }
 
-            Rectangle exitApplicationRec = (Rectangle) {contentPositionX, (0.01 * active_height + 535), 0.01 * active_width + 100, 0.01 * active_height + 20};
-            
-            if ((state != GUI_STATE_DISABLED) && !guiLocked)
-            {
-                Vector2 mousePoint = GetMousePosition();
-                if (CheckCollisionPointRec(mousePoint, exitApplicationRec))
+            #if defined(PLATFORM_DESKTOP)
+                Rectangle exitApplicationRec = (Rectangle) {contentPositionX, (0.01 * active_height + 535), 0.01 * active_width + 100, 0.01 * active_height + 20};
+                
+                if ((state != GUI_STATE_DISABLED) && !guiLocked)
                 {
-                    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = GUI_STATE_PRESSED;
-                    else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) state = GUI_STATE_PRESSED;
-                    else state = GUI_STATE_FOCUSED;
+                    Vector2 mousePoint = GetMousePosition();
+                    if (CheckCollisionPointRec(mousePoint, exitApplicationRec))
+                    {
+                        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = GUI_STATE_PRESSED;
+                        else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) state = GUI_STATE_PRESSED;
+                        else state = GUI_STATE_FOCUSED;
 
-                    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-                         exit(0);
+                        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+                            exit(0);
+                        }
                     }
                 }
-            }
+                
+                GuiDrawRectangle(exitApplicationRec, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GRAY, guiAlpha), Fade(state == GUI_STATE_FOCUSED ? (Color) {193, 92, 92, 255} : (Color) {168, 62, 62, 255}, guiAlpha));
+                GuiDrawText("Exit", GetTextBounds(BUTTON, exitApplicationRec), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(WHITE, guiAlpha));
+                state = GUI_STATE_NORMAL;
+            #endif
             
-            GuiDrawRectangle(exitApplicationRec, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GRAY, guiAlpha), Fade(state == GUI_STATE_FOCUSED ? (Color) {193, 92, 92, 255} : (Color) {168, 62, 62, 255}, guiAlpha));
-            GuiDrawText("Exit", GetTextBounds(BUTTON, exitApplicationRec), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(WHITE, guiAlpha));
-            state = GUI_STATE_NORMAL;
         }
         
         // new cell type UI
