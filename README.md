@@ -8,9 +8,8 @@ It supports both self actualizing cellular automata designs, neighbour affecting
 
 Designed cells can be saved for later use or sent to other users in .json format.
 
-The code is available in this repo, if anyone wants to change anything please go ahead.
-
-The following text will explain how each feature works.
+<br>
+There is an online version available <a href="https://greenbluebit.github.io/cellular_fun/">here</a>! Do be warned, I haven't tested that one much.
 
 ---
 
