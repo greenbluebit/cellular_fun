@@ -135,14 +135,14 @@ Most of the functionality described can be accessed via keyboard keys directly. 
 What can be done with it
 --------
 
-<img src="https://media3.giphy.com/media/1t49rzDw6R2n4fULtE/giphy.gif?cid=790b7611cd512d26d4b7c741e8548b222ab66907fb9a679a&rid=giphy.gif&ct=g" width="1440px">
+<img align="center" src="https://media3.giphy.com/media/1t49rzDw6R2n4fULtE/giphy.gif?cid=790b7611cd512d26d4b7c741e8548b222ab66907fb9a679a&rid=giphy.gif&ct=g" width="1440px">
 <p align="center">Brian's Brain</p>
 <br>
-<img src="https://media0.giphy.com/media/uwq8I7VloDgScBx4mC/giphy.gif?cid=790b761117074dc5d1b863939c1ec0a7a3134221aa0b47bd&rid=giphy.gif&ct=g" width="1440px">
+<img align="center" src="https://media0.giphy.com/media/uwq8I7VloDgScBx4mC/giphy.gif?cid=790b761117074dc5d1b863939c1ec0a7a3134221aa0b47bd&rid=giphy.gif&ct=g" width="1440px">
 <p align="center">Mazelectric</p>
 <br>
-<img src="https://media1.giphy.com/media/VAbEqx3WmlMeTzArjI/giphy.gif?cid=790b761164cdc884fcf6a6343be0e502b8896b0bfa776c35&rid=giphy.gif&ct=g" width="1440px">
+<img align="center" src="https://media1.giphy.com/media/VAbEqx3WmlMeTzArjI/giphy.gif?cid=790b761164cdc884fcf6a6343be0e502b8896b0bfa776c35&rid=giphy.gif&ct=g" width="1440px">
 <p align="center">WireWorld</p>
 <br>
-<img src="https://media3.giphy.com/media/oCv5tzaOSW4RqhH8Vh/giphy.gif?cid=790b76114d147fffd4e8c93a57043e5c02858aef44a7adf3&rid=giphy.gif&ct=g" width="890px">
+<img align="center" src="https://media3.giphy.com/media/oCv5tzaOSW4RqhH8Vh/giphy.gif?cid=790b76114d147fffd4e8c93a57043e5c02858aef44a7adf3&rid=giphy.gif&ct=g" width="890px">
 <p align="center">Loaded image having fun</p>
