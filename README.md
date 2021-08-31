@@ -1,6 +1,6 @@
 <img align="left" src="https://media2.giphy.com/media/YFoZ1yAgqegu6pekdc/giphy.gif?cid=790b7611fe1cf74a6a5893f5e8c4967368b77a3b7a09e1d0&rid=giphy.gif&ct=g" width="288px">
 
-**Cellular Fun is a small automata 'engine'**
+**Cellular Fun is a small cellular automata 'engine'**
 
 It allows users to design and test their own cellular automatas with no coding. It is well suited for trying out new ideas and experiencing the interesting patterns developing over generations.
 
@@ -73,17 +73,21 @@ Loading works by taking each pixel, and finding the closest cell type by color, 
 
 Pressing any of the four buttons to load or save something will open the File Dialog.
 
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
 
-<p align="center"><img src="https://i.ibb.co/W6zCpsr/file-dialog.png" width="700" align="center"></p>
+<p align="center"><img src="https://i.ibb.co/W6zCpsr/file-dialog.png" width="700px" align="center"></p>
 <p align="center">The File Dialog showing all of the existing rules in .json format</p>
 
 The dialog allows a user to decide what to save and where. Currently, the user needs to specify the format, ".json" for rules and ".png", ".jpeg", ".jpg", "bmp" for images.
 
-<p align="center"><img src="https://i.ibb.co/520z9WH/create-cell.png" width="600" align="center"></p>
-<p align="center">The Cell Editor Dialog with the Water Cell</p>
+How to Add/Edit a Cell
+--------
 
-A cell requires a name, all other information is optional.
+When pressing the **...** button or **+** button, the Cell Editor Dialog will appear. It is separated in two principal parts.
+
+<p align="center"><img src="https://i.ibb.co/q1HGKyP/create-cell-top.png" width="520px" align="center"></p>
+
+The top part partains to the global properties of a cell. From all of the options here, only the name is required, everything else is optional.
 
 The **Is Default checkbox** sets the current cell to be default. This is used when clearing the grid to swap all other cells on the grid with this one.
 
@@ -94,6 +98,8 @@ The **Is Maintaining Velocity checkbox** makes the cell looking for free directi
 The **Color picker** on the right is what we use for the Image loading/saving functionality as well as how we differentiate between cells in the menu on the right of the window.
 
 The **Add Relationship button** adds a new relationship to the current cell. It can only be done 10 times.
+
+<p align="center"><img src="https://i.ibb.co/MMhsmHC/create-cell-bottom.png" width="520px" align="center"></p>
 
 The table in the bottom of the Cell Editor Dialog consists of the relationships active in the current cell.
 
@@ -116,3 +122,16 @@ The **Delete column** allows the user to remove a relationship.
 The **Save button** creates the cell, selects it as the current cell used by the brush and unpauses the simulation, hiding the **main menu**. If the **Generation Speed** was already set to "Stop" then the simulation will not move.
 
 The **Delete button** allows the user to remove a cell. This does not work if the cell is currently used in a relationship by another cell and will require the user to first remove the cell from said relationship.
+
+Comfort Tricks
+--------
+
+Most of the functionality described can be accessed via keyboard keys directly. The following image shows all of the binded keys:
+
+<p align="center"><img src="https://i.ibb.co/WPDTMr7/keyboard-usage-diagram.png" width = "1600px" align="center"></p>
+
+**Cinematic Mode** hides the UI.
+
+What can be done with it
+--------
+
