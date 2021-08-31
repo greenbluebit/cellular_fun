@@ -24,7 +24,9 @@ Content
 --------
 
 - <a href="https://github.com/greenbluebit/cellular_fun#how-it-works">**How it works**</a>
-
+- <a href="https://github.com/greenbluebit/cellular_fun#how-to-addedit-a-cell">**How to Add/Edit a Cell**</a>
+- <a href="https://github.com/greenbluebit/cellular_fun#comfort-tricks">**Comfort Tricks**</a>
+- <a href="https://github.com/greenbluebit/cellular_fun#what-can-be-done-with-it">**What can be done with it**</a>
 
 How it works
 --------
