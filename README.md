@@ -154,3 +154,7 @@ What can be done with it
 <img align="center" src="https://media3.giphy.com/media/oCv5tzaOSW4RqhH8Vh/giphy.gif?cid=790b76114d147fffd4e8c93a57043e5c02858aef44a7adf3&rid=giphy.gif&ct=g" width="890px">
 </p>
 <p align="center">Loaded image having fun</p>
+<p align="center">
+<img align="center" src="https://media1.giphy.com/media/GeTCz0wOULARsnF9Fx/giphy.gif?cid=790b761107a67c2d1b531f45730db23e138b3d451b15d634&rid=giphy.gif&ct=g" width="1437px">
+</p>
+<p align=center">That's all folks!</p>
