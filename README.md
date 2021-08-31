@@ -143,3 +143,6 @@ What can be done with it
 <br>
 <img src="https://media1.giphy.com/media/VAbEqx3WmlMeTzArjI/giphy.gif?cid=790b761164cdc884fcf6a6343be0e502b8896b0bfa776c35&rid=giphy.gif&ct=g" width="1440px">
 <p align="center">WireWorld</p>
+<br>
+<img src="https://media3.giphy.com/media/oCv5tzaOSW4RqhH8Vh/giphy.gif?cid=790b76114d147fffd4e8c93a57043e5c02858aef44a7adf3&rid=giphy.gif&ct=g" width="890px">
+<p align="center">Loaded image having fun</p>
