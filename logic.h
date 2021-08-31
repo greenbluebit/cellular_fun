@@ -85,10 +85,12 @@ void HandleOpeningImage() {
             float prevDistance = -1;
             int currentIndex = 0;
             for(int i = 0; i < MAX_CELLTYPES; i++) {
-                float distance = GetDistanceBetweenColors(((Color *)droppedImage.data)[y * droppedImage.width + x], cellTypes[i].color);
-                if(prevDistance == -1 || distance < prevDistance) {
-                    prevDistance = distance;
-                    currentIndex = i;
+                if(cellTypes[i].index > -1) {
+                    float distance = GetDistanceBetweenColors(((Color *)droppedImage.data)[y * droppedImage.width + x], cellTypes[i].color);
+                    if(prevDistance == -1 || distance < prevDistance) {
+                        prevDistance = distance;
+                        currentIndex = i;
+                    }
                 }
             }
             cells[x][y].cellTypeIndex = currentIndex;
@@ -107,7 +109,7 @@ void Setup() {
     InitWindow(active_width, active_height, "Cellular Fun");
 
     fileDialogState = InitGuiFileDialog(active_width / 2, active_height / 2, GetWorkingDirectory(), false);
-
+    
     camera.target = (Vector2) { (active_width / 2) , (active_height / 2)};
     camera.offset = camera.target;
     camera.target = (Vector2) {((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) / 2, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) / 2};
@@ -276,7 +278,7 @@ void Loop() {
         camera.target = (Vector2) { (active_width / 2) , (active_height / 2)};
         camera.offset = camera.target;
         camera.target = (Vector2) {((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_X) / 2, ((CELL_SIZE + CELL_SEPARATION) * MAX_CELLS_Y) / 2};
-        
+        fileDialogState.position = (Vector2){ GetScreenWidth()/2 - fileDialogState.size.x/2, GetScreenHeight()/2 - fileDialogState.size.y/2 };
     }
 
     if(fileDialogState.SelectFilePressed) {
@@ -534,17 +536,17 @@ void UpdateMyCamera() {
     if(isShowingUI == true) {
         return;
     }
-    if(IsKeyDown(KEY_A)) {
+    if(IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
         camera.target.x -= (isMovingFast) ? FAST_MOVE_SPEED : MOVE_SPEED;
     }
-    if(IsKeyDown(KEY_D)) {
+    if(IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
         camera.target.x += (isMovingFast) ? FAST_MOVE_SPEED : MOVE_SPEED;
     }
 
-    if(IsKeyDown(KEY_W)) {
+    if(IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) {
         camera.target.y -= (isMovingFast) ? FAST_MOVE_SPEED : MOVE_SPEED;
     }
-    if(IsKeyDown(KEY_S)) {
+    if(IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) {
         camera.target.y += (isMovingFast) ? FAST_MOVE_SPEED : MOVE_SPEED;
     }
 
